@@ -1182,7 +1182,7 @@ async function updateJob(id, data) {
   if (error) return { success: false, message: error.message };
   return { success: true, message: 'อัปเดตเรียบร้อย' };
 }
-async function deleteJob(id) {
+async function deleteJobRow(id) {
   const { error } = await SB.from('jobs').delete().eq('id', id);
   if (error) return { success: false, message: error.message };
   return { success: true, message: 'ลบเรียบร้อย' };
@@ -1230,7 +1230,7 @@ async function apiPost(bodyStr) {
     switch (body.action) {
       case 'addJob': return await addJob(body.data);
       case 'updateJob': return await updateJob(body.id, body.data);
-      case 'deleteJob': return await deleteJob(body.id);
+      case 'deleteJob': return await deleteJobRow(body.id);
       case 'addTech': return await addTech(body.data);
       case 'updateTech': return await updateTech(body.id, body.data);
       case 'deleteTech': return await deleteTech(body.id);
