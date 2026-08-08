@@ -2,3 +2,7 @@
 Thumbs.db
 node_modules/
 *.log
+
+# one-time data import files — may contain real customer/job data, never commit
+/import/*.csv
+/import/*.xlsx
