@@ -1,0 +1,2230 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="RepairDesk Pro — ระบบแจ้งซ่อมและบำรุงรักษาเครื่องจักรสำหรับโรงงาน">
+<meta name="theme-color" content="#1D6EDB">
+<title>RepairDesk Pro — ระบบแจ้งซ่อม</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+/* ============================================================
+   DESIGN SYSTEM — REPAIRDESK PRO
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  /* Brand */
+  --brand:#1D6EDB;
+  --brand-dark:#1353A8;
+  --brand-light:#EBF2FD;
+  --brand-glow:rgba(29,110,219,0.18);
+
+  /* Status Colors */
+  --c-wait-bg:#FFF8E1;--c-wait:#E65100;--c-wait-b:#FFD54F;
+  --c-prog-bg:#E3F2FD;--c-prog:#1565C0;--c-prog-b:#90CAF9;
+  --c-done-bg:#E8F5E9;--c-done:#2E7D32;--c-done-b:#A5D6A7;
+  --c-cancel-bg:#F3F4F6;--c-cancel:#6B7280;--c-cancel-b:#D1D5DB;
+  --c-hi-bg:#FEECEC;--c-hi:#C62828;--c-hi-b:#EF9A9A;
+
+  /* Neutrals (Light) */
+  --bg:#F0F4FA;
+  --surface:#FFFFFF;
+  --surface2:#F7F9FC;
+  --border:#E2E8F0;
+  --border2:#CBD5E1;
+  --text:#0F172A;
+  --text2:#475569;
+  --text3:#94A3B8;
+
+  /* Misc */
+  --rad:10px;
+  --rad-lg:16px;
+  --shadow:0 2px 12px rgba(15,23,42,0.06);
+  --shadow-lg:0 8px 32px rgba(15,23,42,0.10);
+  --shadow-xl:0 20px 60px rgba(15,23,42,0.15);
+  --transition:all .2s cubic-bezier(.4,0,.2,1);
+
+  --sidebar-w:230px;
+}
+
+/* ---------- DARK MODE ---------- */
+:root.dark{
+  --brand:#3B82F6;
+  --brand-dark:#2563EB;
+  --brand-light:#1E293B;
+  --brand-glow:rgba(59,130,246,0.22);
+
+  --c-wait-bg:#422006;--c-wait:#FBBF24;--c-wait-b:#78350F;
+  --c-prog-bg:#172554;--c-prog:#60A5FA;--c-prog-b:#1E3A8A;
+  --c-done-bg:#052E16;--c-done:#4ADE80;--c-done-b:#14532D;
+  --c-cancel-bg:#1F2937;--c-cancel:#9CA3AF;--c-cancel-b:#374151;
+  --c-hi-bg:#450A0A;--c-hi:#F87171;--c-hi-b:#7F1D1D;
+
+  --bg:#0B1120;
+  --surface:#131C2E;
+  --surface2:#1A2540;
+  --border:#273349;
+  --border2:#3A4A66;
+  --text:#E2E8F0;
+  --text2:#94A3B8;
+  --text3:#64748B;
+
+  --shadow:0 2px 12px rgba(0,0,0,0.4);
+  --shadow-lg:0 8px 32px rgba(0,0,0,0.5);
+  --shadow-xl:0 20px 60px rgba(0,0,0,0.6);
+}
+
+html{scroll-behavior:smooth}
+body{font-family:'Prompt',sans-serif;font-size:14px;color:var(--text);background:var(--bg);line-height:1.5;-webkit-font-smoothing:antialiased;transition:background .25s,color .25s}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app{display:flex;flex-direction:row;min-height:100vh}
+.main-layout{display:flex;flex:1}
+
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;
+  overflow-y:auto;z-index:20;
+  box-shadow:2px 0 12px rgba(15,23,42,0.04);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+}
+.sb-logo{
+  padding:22px 20px 16px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--border);
+}
+.sb-logo-icon{
+  width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(135deg,var(--brand),var(--brand-dark));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:20px;flex-shrink:0;
+  box-shadow:0 4px 12px var(--brand-glow);
+}
+.sb-logo-text{font-size:15px;font-weight:700;color:var(--text);line-height:1.2}
+.sb-logo-sub{font-size:10px;font-weight:400;color:var(--text3)}
+.sb-nav{padding:14px 10px;flex:1}
+.sb-section{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;padding:0 10px;margin:16px 0 6px}
+.nb{
+  width:100%;display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:var(--rad);border:none;
+  background:transparent;color:var(--text2);font-size:13px;font-weight:500;
+  cursor:pointer;text-align:left;transition:var(--transition);
+  font-family:'Prompt',sans-serif;
+}
+.nb:hover{background:var(--bg);color:var(--text)}
+.nb.on{background:var(--brand-light);color:var(--brand);font-weight:600}
+.nb.on i{color:var(--brand)}
+.nb i{font-size:17px;opacity:.7;transition:var(--transition)}
+.nb.on i{opacity:1}
+.nb .badge-num{
+  margin-left:auto;background:var(--brand);color:#fff;
+  font-size:10px;font-weight:700;border-radius:99px;
+  padding:1px 7px;min-width:20px;text-align:center;
+}
+.nb.on .badge-num{background:var(--brand)}
+.nb .badge-num.red{background:#C62828}
+
+.sb-footer{padding:14px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:10px}
+.sb-footer-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#conn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:99px;border:1px solid;
+  font-size:10px;font-weight:600;flex:1;
+}
+.conn-ok{background:var(--c-done-bg);color:var(--c-done);border-color:var(--c-done-b)!important}
+.conn-loading{background:var(--c-wait-bg);color:var(--c-wait);border-color:var(--c-wait-b)!important}
+.conn-err{background:var(--c-hi-bg);color:var(--c-hi);border-color:var(--c-hi-b)!important}
+.theme-toggle{
+  width:34px;height:34px;border-radius:8px;border:1px solid var(--border2);
+  background:var(--surface);color:var(--text2);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;transition:var(--transition);flex-shrink:0;
+}
+.theme-toggle:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-light)}
+
+/* Mobile overlay */
+.scrim{
+  position:fixed;inset:0;background:rgba(15,23,42,0.5);
+  backdrop-filter:blur(2px);z-index:19;opacity:0;visibility:hidden;
+  transition:opacity .28s,visibility .28s;
+}
+.scrim.on{opacity:1;visibility:visible}
+
+/* CONTENT */
+.content{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:14px 24px;background:var(--surface);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:10;
+}
+.topbar-left{display:flex;align-items:center;gap:12px;min-width:0}
+.topbar-title{font-size:18px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-actions{display:flex;gap:10px;align-items:center;flex-shrink:0}
+.hamburger{
+  display:none;width:40px;height:40px;border-radius:10px;border:1px solid var(--border2);
+  background:var(--surface);color:var(--text);cursor:pointer;font-size:20px;
+  align-items:center;justify-content:center;transition:var(--transition);flex-shrink:0;
+}
+.hamburger:hover{border-color:var(--brand);color:var(--brand)}
+
+.page-inner{padding:24px;max-width:1400px;width:100%;margin:0 auto}
+
+/* PAGES */
+.page{display:none}
+.page.on{display:block;animation:pageIn .25s ease}
+@keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ============================================================
+   COMPONENTS
+   ============================================================ */
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 18px;border-radius:var(--rad);cursor:pointer;
+  font-weight:600;font-size:13px;border:1.5px solid var(--border2);
+  background:var(--surface);color:var(--text2);font-family:'Prompt',sans-serif;
+  transition:var(--transition);white-space:nowrap;
+}
+.btn:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-light)}
+.btn-primary{background:var(--brand);color:#fff;border-color:var(--brand);box-shadow:0 4px 14px var(--brand-glow)}
+.btn-primary:hover{background:var(--brand-dark);border-color:var(--brand-dark);color:#fff;box-shadow:0 6px 20px var(--brand-glow)}
+.btn-danger{background:#C62828;color:#fff;border-color:#C62828}
+.btn-danger:hover{background:#B71C1C;border-color:#B71C1C;color:#fff}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-icon{padding:8px;aspect-ratio:1}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+button:focus-visible,.btn:focus-visible,.nb:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+/* Cards */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--rad-lg);padding:22px;
+  box-shadow:var(--shadow);margin-bottom:20px;
+}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap}
+.card-title{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px}
+.card-title i{font-size:18px;color:var(--brand)}
+
+/* Metric Cards */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px}
+.met{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--rad-lg);padding:18px 20px;
+  position:relative;overflow:hidden;transition:var(--transition);
+  box-shadow:var(--shadow);cursor:default;
+}
+.met::before{
+  content:'';position:absolute;top:0;right:0;
+  width:80px;height:80px;border-radius:50%;
+  transform:translate(20px,-20px);opacity:.10;
+  background:currentColor;
+}
+.met:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.met-icon{font-size:22px;margin-bottom:8px;display:block}
+.met-val{font-size:30px;font-weight:800;display:block;line-height:1;margin-bottom:4px}
+.met-lbl{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px}
+.met.blue{color:var(--brand);background:linear-gradient(135deg,var(--surface),var(--brand-light))}
+.met.orange{color:var(--c-wait);background:linear-gradient(135deg,var(--surface),var(--c-wait-bg))}
+.met.green{color:var(--c-done);background:linear-gradient(135deg,var(--surface),var(--c-done-bg))}
+.met.red{color:var(--c-hi);background:linear-gradient(135deg,var(--surface),var(--c-hi-bg))}
+.met.purple{color:#6D28D9;background:linear-gradient(135deg,var(--surface),#EDE9FE)}
+.met.teal{color:#0F766E;background:linear-gradient(135deg,var(--surface),#CCFBF1)}
+
+/* Badges */
+.badge{padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;display:inline-block;white-space:nowrap}
+.bw{background:var(--c-wait-bg);color:var(--c-wait);border:1px solid var(--c-wait-b)}
+.bp{background:var(--c-prog-bg);color:var(--c-prog);border:1px solid var(--c-prog-b)}
+.bd{background:var(--c-done-bg);color:var(--c-done);border:1px solid var(--c-done-b)}
+.bc{background:var(--c-cancel-bg);color:var(--c-cancel);border:1px solid var(--c-cancel-b)}
+.bh{background:var(--c-hi-bg);color:var(--c-hi);border:1px solid var(--c-hi-b)}
+.b-brand{background:var(--brand-light);color:var(--brand);border:1px solid var(--brand)}
+
+/* Job Rows */
+.job-row{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:var(--transition);
+}
+.job-row:last-child{border-bottom:none}
+.job-row:hover{background:var(--surface2)}
+.job-row.overdue{border-left:3px solid var(--c-hi);padding-left:13px}
+.job-row-id{font-size:12px;font-weight:700;color:var(--brand);min-width:65px}
+.job-row-body{flex:1;min-width:0}
+.job-row-main{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.job-row-sub{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.job-row-badges{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+
+/* Grid */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* Forms */
+.field{margin-bottom:16px}
+.field label{display:block;font-weight:600;font-size:12px;color:var(--text2);margin-bottom:6px;letter-spacing:.2px}
+.field input,.field select,.field textarea{
+  width:100%;padding:10px 12px;
+  border:1.5px solid var(--border2);border-radius:var(--rad);
+  font-size:13px;font-family:'Prompt',sans-serif;color:var(--text);
+  background:var(--surface);transition:var(--transition);
+  outline:none;
+}
+.field input::placeholder,.field textarea::placeholder{color:var(--text3)}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-glow);
+}
+.field textarea{resize:vertical;min-height:60px}
+.field-hint{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* Modal */
+.mbg{
+  position:fixed;inset:0;background:rgba(15,23,42,0.55);
+  display:none;align-items:center;justify-content:center;z-index:100;
+  backdrop-filter:blur(4px);padding:16px;
+}
+.mbg.on{display:flex;animation:fadeIn .18s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{
+  background:var(--surface);border-radius:var(--rad-lg);
+  width:680px;max-width:100%;max-height:92vh;overflow-y:auto;
+  box-shadow:var(--shadow-xl);
+  animation:slideUp .22s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:20px 24px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--surface);z-index:2;
+}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px;min-width:0}
+.modal-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--bg);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:var(--transition);flex-shrink:0}
+.modal-close:hover{background:var(--c-hi-bg);color:var(--c-hi)}
+.modal-body{padding:24px}
+.modal-footer{
+  padding:16px 24px;border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;
+  position:sticky;bottom:0;background:var(--surface);z-index:2;
+}
+
+/* Search / Filter */
+.search-bar{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1.5px solid var(--border2);
+  border-radius:var(--rad);padding:8px 14px;transition:var(--transition);flex:1;
+}
+.search-bar:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-glow)}
+.search-bar i{color:var(--text3);font-size:17px}
+.search-bar input{border:none;background:transparent;flex:1;font-size:13px;color:var(--text);font-family:'Prompt',sans-serif;outline:none;min-width:0}
+
+/* Filter Tabs */
+.filter-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.ftab{
+  padding:6px 14px;border-radius:99px;border:1.5px solid var(--border2);
+  background:var(--surface);color:var(--text2);font-size:12px;font-weight:600;
+  cursor:pointer;transition:var(--transition);font-family:'Prompt',sans-serif;
+}
+.ftab:hover,.ftab.on{background:var(--brand-light);border-color:var(--brand);color:var(--brand)}
+
+/* Inline filter row */
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end}
+.filter-row .field{margin-bottom:0;min-width:130px;flex:1}
+.filter-row .field label{margin-bottom:4px}
+.filter-row select,.filter-row input{padding:8px 10px;font-size:12px}
+
+/* Tech Cards */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.tech-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--rad-lg);padding:18px;
+  display:flex;gap:14px;align-items:flex-start;
+  transition:var(--transition);box-shadow:var(--shadow);
+}
+.tech-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.tech-avatar{
+  width:46px;height:46px;border-radius:12px;
+  background:linear-gradient(135deg,var(--brand),var(--brand-dark));
+  color:#fff;font-size:18px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.tech-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.tech-skill{font-size:11px;color:var(--text3)}
+.tech-phone{font-size:12px;color:var(--text2);margin-top:4px;display:flex;align-items:center;gap:4px}
+.tech-actions{margin-left:auto;display:flex;gap:6px;flex-shrink:0}
+
+/* Machine / data table */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table thead th{background:var(--surface2);font-size:12px;color:var(--text2);padding:10px 12px;text-align:left;border-bottom:2px solid var(--border);white-space:nowrap}
+.data-table tbody td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.data-table tbody tr:hover{background:var(--surface2)}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#1E293B;color:#fff;padding:12px 22px;border-radius:99px;
+  font-size:13px;font-weight:500;display:none;z-index:300;
+  box-shadow:var(--shadow-lg);white-space:nowrap;opacity:0;
+  transition:transform .3s,opacity .3s;
+}
+.toast.on{display:block;opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Spinner */
+.spin{display:inline-block;width:10px;height:10px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:sp .6s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* Skeleton loaders */
+.skel{background:linear-gradient(90deg,var(--surface2) 25%,var(--border) 37%,var(--surface2) 63%);background-size:400% 100%;animation:sk 1.4s ease infinite;border-radius:var(--rad)}
+@keyframes sk{0%{background-position:100% 50%}100%{background-position:0 50%}}
+.skel-met{height:100px;border-radius:var(--rad-lg)}
+.skel-row{height:54px;border-bottom:1px solid var(--border)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-state i{font-size:48px;margin-bottom:12px;display:block;opacity:.4}
+.empty-state p{font-size:13px}
+
+/* Section Divider */
+.section-divider{display:flex;align-items:center;gap:10px;margin:20px 0 14px}
+.section-divider span{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+.section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Progress bar */
+.progress-bar{height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--brand),#60A5FA);border-radius:99px;transition:width .5s ease}
+
+/* Charts container */
+.chart-wrap{position:relative;height:240px}
+
+/* Timeline */
+.timeline{list-style:none;padding:0;margin:0;position:relative}
+.timeline::before{content:'';position:absolute;left:11px;top:6px;bottom:6px;width:2px;background:var(--border)}
+.tl-item{position:relative;padding:0 0 16px 36px}
+.tl-item::before{content:'';position:absolute;left:6px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--brand);border:2px solid var(--surface);box-shadow:0 0 0 2px var(--brand)}
+.tl-time{font-size:11px;color:var(--text3);font-weight:600}
+.tl-body{font-size:12px;color:var(--text2);margin-top:2px}
+.tl-body b{color:var(--text)}
+
+/* Pagination */
+.pager{display:flex;gap:6px;justify-content:center;align-items:center;margin-top:16px;flex-wrap:wrap}
+.pager button{min-width:34px;height:34px;padding:0 8px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Prompt',sans-serif;transition:var(--transition)}
+.pager button:hover:not(:disabled){border-color:var(--brand);color:var(--brand)}
+.pager button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.pager button:disabled{opacity:.4;cursor:not-allowed}
+
+/* kbd */
+kbd{background:var(--surface2);padding:2px 8px;border-radius:5px;border:1px solid var(--border);font-family:'Prompt',sans-serif;font-size:12px}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+
+/* ---------- RESPONSIVE ---------- */
+@media(max-width:1024px){
+  .grid2{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  :root{--sidebar-w:260px}
+  .sidebar{
+    position:fixed;left:0;top:0;bottom:0;height:100vh;
+    transform:translateX(-100%);box-shadow:var(--shadow-xl);
+  }
+  .sidebar.open{transform:translateX(0)}
+  .hamburger{display:flex}
+  .topbar{padding:12px 14px}
+  .topbar-title{font-size:16px}
+  .topbar-actions .btn-label{display:none}
+  .topbar-actions .btn{padding:9px 11px}
+  .page-inner{padding:14px}
+  .metrics{grid-template-columns:1fr 1fr;gap:10px}
+  .met{padding:14px 16px}
+  .met-val{font-size:24px}
+  .modal{border-radius:var(--rad-lg) var(--rad-lg) 0 0;max-height:95vh;align-self:flex-end;width:100%}
+  .mbg{align-items:flex-end;padding:0}
+  .card{padding:16px}
+  .job-row{padding:12px;gap:10px;flex-wrap:wrap}
+  .job-row-badges{flex-basis:100%;justify-content:flex-start}
+  .grid2{grid-template-columns:1fr}
+}
+@media(max-width:420px){
+  .metrics{grid-template-columns:1fr 1fr}
+  .sb-logo-text{font-size:14px}
+}
+/* Version marker — used to confirm deployment is up-to-date */
+.ver-badge{
+  position:fixed;bottom:6px;right:8px;z-index:9999;
+  font-size:9px;font-weight:700;color:#fff;background:#1D6EDB;
+  padding:2px 7px;border-radius:99px;opacity:.85;pointer-events:none;
+  font-family:monospace;
+}
+
+/* ============================================================
+   PRINT TICKET — rendered in-page (no popup) to avoid the
+   Apps Script sandboxed-iframe/popup styling issue.
+   ============================================================ */
+#print-ticket{display:none}
+body.print-mode-ticket > .app,
+body.print-mode-ticket > .toast,
+body.print-mode-ticket > .ver-badge{display:none!important}
+body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26px 0;min-height:100vh}
+
+.pt-wrap{max-width:800px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(15,23,42,.12);border-top:5px solid #1D6EDB;color:#0F172A}
+
+.pt-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:22px 26px 18px;border-bottom:1px solid #E2E8F0}
+.pt-head-left{display:flex;align-items:center;gap:14px;min-width:0}
+.pt-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#1D6EDB,#1353A8);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(29,110,219,.3)}
+.pt-icon svg{width:22px;height:22px;stroke:#fff}
+.pt-title{font-size:17px;font-weight:700;color:#0F172A;line-height:1.25}
+.pt-sub{font-size:11px;color:#94A3B8;margin-top:2px}
+.pt-repbox{text-align:right;flex-shrink:0;border:1.5px solid #1D6EDB;border-radius:10px;padding:7px 16px;background:#EBF2FD;min-width:150px}
+.pt-rep-lbl{font-size:9px;font-weight:700;letter-spacing:.6px;color:#5C87C9;text-transform:uppercase;display:block}
+.pt-rep-val{font-size:19px;font-weight:800;color:#1D6EDB;letter-spacing:.4px;line-height:1.3}
+.pt-rep-date{font-size:10.5px;color:#64748B;margin-top:2px}
+.pt-rep-date b{color:#0F172A}
+
+.pt-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.pt-col{padding:20px 24px}
+.pt-col-left{border-right:1px solid #E2E8F0}
+.pt-col-title{font-size:12.5px;font-weight:700;color:#0F172A;display:flex;align-items:center;gap:7px;margin-bottom:14px}
+.pt-col-title svg{width:15px;height:15px;stroke:#1D6EDB;flex-shrink:0}
+
+.pt-row{display:flex;align-items:flex-start;gap:6px;padding:6px 0;border-bottom:1px dashed #EEF1F5;font-size:12px}
+.pt-row:last-child{border-bottom:none}
+.pt-lbl{color:#94A3B8;min-width:96px;flex-shrink:0}
+.pt-val{color:#0F172A;font-weight:600;word-break:break-word}
+.pt-val.link{color:#1D6EDB}
+.pt-badge{display:inline-block;padding:2px 10px;border-radius:6px;font-size:11px;font-weight:700}
+
+.pt-timegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.pt-timebox{border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;background:#F8FAFC}
+.pt-timebox.done{background:#E8F5E9;border-color:#A5D6A7}
+.pt-tk{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;color:#64748B;margin-bottom:4px}
+.pt-timebox.done .pt-tk{color:#2E7D32}
+.pt-tv{font-size:12px;color:#0F172A;font-weight:500;letter-spacing:.3px}
+
+.pt-area-lbl{font-size:11px;font-weight:700;color:#475569;margin:0 0 5px;display:flex;align-items:center;gap:5px}
+.pt-area{border:1.3px dashed #CBD5E1;border-radius:8px;padding:9px 11px;font-size:11.5px;color:#334155;line-height:2;min-height:72px;margin-bottom:12px;white-space:pre-wrap;background:#FCFDFE}
+.pt-area.small{min-height:44px}
+.pt-area.big{min-height:150px}
+.pt-area:last-child{margin-bottom:0}
+.pt-area-empty{color:#CBD5E1}
+
+.pt-sign{display:flex;justify-content:space-around;padding:20px 26px 26px;border-top:1px dashed #E2E8F0;margin-top:4px}
+.pt-sig{text-align:center;width:42%}
+.pt-sig-line{border-bottom:1.3px solid #475569;height:16mm}
+.pt-sig-name{font-size:11.5px;font-weight:600;color:#0F172A;margin-top:6px}
+.pt-sig-role{font-size:10px;color:#94A3B8;margin-top:1px}
+
+.pt-actions{max-width:800px;margin:20px auto 0;text-align:center;display:flex;justify-content:center;gap:12px}
+
+@media(max-width:640px){
+  .pt-body{grid-template-columns:1fr}
+  .pt-col-left{border-right:none;border-bottom:1px solid #E2E8F0}
+  .pt-timegrid{grid-template-columns:1fr}
+}
+@media print{
+  @page{size:A4 portrait;margin:10mm}
+  body.print-mode-ticket #print-ticket{background:#fff;padding:0}
+  .pt-actions{display:none}
+
+  /* Compact layout so the whole ticket fits in the top half of an A4 portrait page */
+  .pt-wrap{
+    box-shadow:none;border-radius:0;border-top:2px solid #1D6EDB;
+    max-width:190mm;width:190mm;margin:0;
+  }
+
+  .pt-head{padding:4mm 5mm 3mm;gap:3mm}
+  .pt-icon{width:8mm;height:8mm;border-radius:2mm;box-shadow:none}
+  .pt-icon svg{width:4.5mm;height:4.5mm}
+  .pt-title{font-size:12px;line-height:1.2}
+  .pt-sub{font-size:8px;margin-top:0.5mm}
+  .pt-repbox{padding:2mm 4mm;min-width:auto;border-radius:2mm}
+  .pt-rep-lbl{font-size:7px}
+  .pt-rep-val{font-size:13px}
+  .pt-rep-date{font-size:8px;margin-top:0.5mm}
+
+  .pt-col{padding:3mm 5mm}
+  .pt-col-title{font-size:9px;margin-bottom:2mm;gap:1.5mm}
+  .pt-col-title svg{width:3mm;height:3mm}
+
+  .pt-row{padding:1mm 0;font-size:8px;gap:2mm}
+  .pt-lbl{min-width:22mm}
+  .pt-badge{font-size:7.5px;padding:0.5mm 2mm;border-radius:1mm}
+
+  .pt-timegrid{gap:2mm;margin-bottom:2mm}
+  .pt-timebox{padding:1.5mm 2mm;border-radius:1.5mm}
+  .pt-tk{font-size:7px;margin-bottom:1mm;gap:1mm}
+  .pt-tv{font-size:8px}
+
+  .pt-area-lbl{font-size:7.5px;margin-bottom:1mm;gap:1mm}
+  .pt-area{padding:2mm 2.5mm;font-size:8px;line-height:1.5;min-height:12mm;margin-bottom:2mm;border-radius:1.5mm}
+  .pt-area.small{min-height:7mm}
+  .pt-area.big{min-height:38mm}
+
+  .pt-sign{padding:3mm 5mm 4mm}
+  .pt-sig-line{height:8mm}
+  .pt-sig-name{font-size:8px;margin-top:1.5mm}
+  .pt-sig-role{font-size:7px;margin-top:0.5mm}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Mobile overlay -->
+  <div class="scrim" id="scrim" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon"><i class="ti ti-tool"></i></div>
+      <div>
+        <div class="sb-logo-text">RepairDesk Pro</div>
+        <div class="sb-logo-sub">ระบบแจ้งซ่อมและบำรุงรักษา</div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section">เมนูหลัก</div>
+      <button class="nb on" id="nav-dash" onclick="go('dash',this)" aria-label="แดชบอร์ด">
+        <i class="ti ti-dashboard"></i> แดชบอร์ด
+      </button>
+      <button class="nb" id="nav-jobs" onclick="go('jobs',this)" aria-label="รายการซ่อม">
+        <i class="ti ti-clipboard-list"></i> รายการซ่อม
+        <span class="badge-num red" id="nav-pending-count" style="display:none">0</span>
+      </button>
+      <div class="sb-section">การจัดการ</div>
+      <button class="nb" id="nav-mach" onclick="go('mach',this)" aria-label="เครื่องจักร">
+        <i class="ti ti-building-factory-2"></i> เครื่องจักร / ยานพาหนะ
+      </button>
+      <button class="nb" id="nav-rep" onclick="go('rep',this)" aria-label="รายงานสรุป">
+        <i class="ti ti-chart-bar"></i> รายงานสรุป
+      </button>
+      <button class="nb" id="nav-techs" onclick="go('techs',this)" aria-label="ทีมช่าง">
+        <i class="ti ti-users"></i> ทีมช่าง
+      </button>
+      <div class="sb-section">ระบบ</div>
+      <button class="nb" id="nav-set" onclick="go('set',this)" aria-label="ตั้งค่า">
+        <i class="ti ti-settings"></i> ตั้งค่า
+      </button>
+    </nav>
+
+    <div class="sb-footer">
+      <div id="conn" class="conn conn-loading"><span class="spin"></span><span>กำลังซิงค์...</span></div>
+      <div class="sb-footer-row">
+        <span>v2.0</span>
+        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="สลับธีม" aria-label="สลับธีมสว่าง/มืด">
+          <i class="ti ti-moon"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="openSidebar()" aria-label="เปิดเมนู"><i class="ti ti-menu-2"></i></button>
+        <div class="topbar-title" id="topbar-title">แดชบอร์ด</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn" onclick="refreshData()" id="btn-refresh" title="รีเฟรชข้อมูล" aria-label="รีเฟรช">
+          <i class="ti ti-refresh"></i>
+        </button>
+        <button class="btn btn-primary" onclick="openJobForm()" id="btn-new-job">
+          <i class="ti ti-plus"></i> <span class="btn-label">แจ้งซ่อมใหม่</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== DASHBOARD PAGE ===== -->
+    <div id="p-dash" class="page on">
+      <div class="page-inner">
+        <div id="d-met" class="metrics"></div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-header"><div class="card-title"><i class="ti ti-chart-donut"></i>สัดส่วนสถานะ</div></div>
+            <div class="chart-wrap"><canvas id="ch-dash-status"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title"><i class="ti ti-chart-line"></i>แนวโน้มรายเดือน (ปีนี้)</div></div>
+            <div class="chart-wrap" style="height:240px"><canvas id="ch-dash-trend"></canvas></div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="ti ti-clock-hour-4"></i>งานล่าสุด</div>
+              <button class="btn btn-sm" onclick="go('jobs',document.getElementById('nav-jobs'))">ดูทั้งหมด</button>
+            </div>
+            <div id="d-recent"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="ti ti-alert-triangle" style="color:var(--c-hi)"></i>งานด่วนและเลยกำหนด</div>
+              <span id="d-hi-count" class="badge bh">0 งาน</span>
+            </div>
+            <div id="d-hi"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-users"></i>ภาระงานช่างแต่ละคน</div></div>
+          <div id="d-techload"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== JOBS PAGE ===== -->
+    <div id="p-jobs" class="page">
+      <div class="page-inner">
+        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <div class="search-bar">
+            <i class="ti ti-search"></i>
+            <input id="sq" placeholder="ค้นหารหัส, เครื่องจักร, ผู้แจ้ง..." oninput="onSearchInput()">
+          </div>
+          <select id="sq-urg" class="btn" style="padding:8px 12px;font-size:12px" onchange="renderJobs()">
+            <option value="">เร่งด่วน: ทั้งหมด</option>
+            <option value="สูง">🔴 ด่วนสูง</option>
+            <option value="ปานกลาง">🟡 ปานกลาง</option>
+            <option value="ต่ำ">🟢 ต่ำ</option>
+          </select>
+          <select id="sq-tech" class="btn" style="padding:8px 12px;font-size:12px" onchange="renderJobs()"></select>
+          <button class="btn" onclick="exportCSV()" title="ส่งออก CSV">
+            <i class="ti ti-download"></i> <span class="btn-label">ส่งออก</span>
+          </button>
+        </div>
+
+        <div class="filter-tabs" id="filter-tabs">
+          <button class="ftab on" onclick="setFilter('',this)">ทั้งหมด</button>
+          <button class="ftab" onclick="setFilter('รอดำเนินการ',this)">รอดำเนินการ</button>
+          <button class="ftab" onclick="setFilter('กำลังซ่อม',this)">กำลังซ่อม</button>
+          <button class="ftab" onclick="setFilter('เสร็จสิ้น',this)">เสร็จสิ้น</button>
+          <button class="ftab" onclick="setFilter('ยกเลิก',this)">ยกเลิก</button>
+          <button class="ftab" onclick="setFilter('overdue',this)" style="border-color:var(--c-hi-b);color:var(--c-hi)">เลยกำหนด</button>
+        </div>
+
+        <div class="card" style="padding:0"><div id="job-list"></div></div>
+        <div id="job-pager" class="pager"></div>
+      </div>
+    </div>
+
+    <!-- ===== MACHINES PAGE ===== -->
+    <div id="p-mach" class="page">
+      <div class="page-inner">
+        <div class="card-header" style="margin-bottom:18px">
+          <div class="card-title" style="font-size:18px"><i class="ti ti-building-factory-2"></i>รายการเครื่องจักร / ยานพาหนะ</div>
+          <button class="btn btn-primary" onclick="openMachineForm()"><i class="ti ti-plus"></i> เพิ่มรายการ</button>
+        </div>
+        <div class="card" style="padding:0">
+          <div class="table-wrap">
+            <table class="data-table" id="mach-table">
+              <thead><tr>
+                <th>ชื่อเครื่องจักร / ทะเบียน</th><th>หมวดหมู่</th><th>สถานที่ตั้ง</th><th>งานซ่อม</th><th style="text-align:right">การจัดการ</th>
+              </tr></thead>
+              <tbody id="mach-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== REPORTS PAGE ===== -->
+    <div id="p-rep" class="page">
+      <div class="page-inner">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="ti ti-filter"></i>ตัวกรองรายงาน</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn" onclick="printReport()"><i class="ti ti-printer"></i>พิมพ์รายงาน</button>
+              <button class="btn btn-primary" onclick="exportReportCSV()"><i class="ti ti-download"></i>ดาวน์โหลด CSV</button>
+            </div>
+          </div>
+          <div class="filter-row">
+            <div class="field"><label>เดือน</label><select id="rep-m" onchange="renderReports()"></select></div>
+            <div class="field"><label>ปี (พ.ศ.)</label><select id="rep-y" onchange="renderReports()"></select></div>
+            <div class="field"><label>เครื่องจักร / ทะเบียน</label><select id="rep-mach" onchange="renderReports()"><option value="">ทั้งหมด</option></select></div>
+            <div class="field"><label>ช่าง</label><select id="rep-tech" onchange="renderReports()"><option value="">ทั้งหมด</option></select></div>
+          </div>
+        </div>
+
+        <div id="rep-stats" class="metrics"></div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-header"><div class="card-title"><i class="ti ti-chart-donut"></i>สัดส่วนสถานะ</div></div>
+            <div class="chart-wrap"><canvas id="ch-done"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title"><i class="ti ti-chart-pie"></i>ความเร่งด่วน</div></div>
+            <div class="chart-wrap"><canvas id="ch-urg"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-chart-line"></i>แนวโน้มรายเดือน (ปีที่เลือก)</div></div>
+          <div class="chart-wrap" style="height:200px"><canvas id="ch-trend"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-trophy"></i>ผลงานช่างแต่ละคน (ในงวด)</div></div>
+          <div class="table-wrap" id="rep-tech-table"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-engine"></i>เครื่องจักรที่ซ่อมบ่อย (ในงวด)</div></div>
+          <div id="rep-mach-table"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="ti ti-list-details"></i>รายการซ่อมในงวดนี้</div>
+            <span id="rep-list-count" class="badge b-brand">0 รายการ</span>
+          </div>
+          <div id="rep-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TECHS PAGE ===== -->
+    <div id="p-techs" class="page">
+      <div class="page-inner">
+        <div class="card-header" style="margin-bottom:18px">
+          <div class="card-title" style="font-size:18px"><i class="ti ti-users"></i>รายชื่อทีมช่าง</div>
+          <button class="btn btn-primary" onclick="openTechForm()"><i class="ti ti-plus"></i>เพิ่มช่าง</button>
+        </div>
+        <div class="tech-grid" id="tech-list"></div>
+      </div>
+    </div>
+
+    <!-- ===== SETTINGS PAGE ===== -->
+    <div id="p-set" class="page">
+      <div class="page-inner">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-settings"></i>ข้อมูลองค์กร</div></div>
+          <p style="font-size:12px;color:var(--text3);margin-bottom:18px">ข้อมูลนี้จะแสดงในหัวกระดาษเอกสารพิมพ์ (ใบแจ้งซ่อม / รายงาน)</p>
+          <form id="f-settings" onsubmit="saveSettings(event)">
+            <div class="grid2">
+              <div class="field"><label>ชื่อบริษัท / องค์กร</label><input id="set-co" placeholder="บริษัท XYZ จำกัด"></div>
+              <div class="field"><label>แผนก / ฝ่าย</label><input id="set-dep" placeholder="ฝ่ายซ่อมบำรุง"></div>
+              <div class="field"><label>เบอร์ติดต่อ</label><input id="set-tel" placeholder="02-XXX-XXXX"></div>
+              <div class="field"><label>ที่อยู่</label><input id="set-addr" placeholder="ที่อยู่ขององค์กร"></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px">
+              <button type="submit" class="btn btn-primary" id="set-btn"><i class="ti ti-device-floppy"></i>บันทึกการตั้งค่า</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-database"></i>ข้อมูลระบบ</div></div>
+          <div id="set-info" style="font-size:13px;color:var(--text2);line-height:2"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-keyboard"></i>คีย์ลัด</div></div>
+          <div style="font-size:13px;color:var(--text2);line-height:2.2">
+            <div><kbd>N</kbd> &nbsp; แจ้งซ่อมใหม่</div>
+            <div><kbd>/</kbd> &nbsp; ค้นหาในรายการซ่อม</div>
+            <div><kbd>Esc</kbd> &nbsp; ปิดหน้าต่าง</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<!-- ============================================================
+     MODAL: JOB FORM
+     ============================================================ -->
+<div id="m-job" class="mbg" onclick="if(event.target===this)closeM('m-job')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-clipboard-text" style="color:var(--brand)"></i><span id="j-title">ใบแจ้งซ่อม</span></div>
+      <button class="modal-close" onclick="closeM('m-job')" aria-label="ปิด"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="f-job" onsubmit="saveJob(event)">
+        <input type="hidden" id="fj-id">
+        <input type="hidden" id="fj-old-status">
+
+        <div class="section-divider"><span>ข้อมูลผู้แจ้ง</span></div>
+        <div class="grid2">
+          <div class="field"><label>ชื่อผู้แจ้ง *</label><input id="fj-cust" placeholder="ชื่อ-นามสกุล" required></div>
+          <div class="field"><label>เบอร์โทรศัพท์</label><input id="fj-ph" placeholder="0XX-XXX-XXXX" type="tel"></div>
+        </div>
+
+        <div class="section-divider"><span>รายละเอียดปัญหา</span></div>
+        <div class="grid2">
+          <div class="field">
+            <label>หมวดหมู่</label>
+            <select id="fj-cat">
+              <option>เครื่องจักร</option>
+              <option>รถขนส่ง</option>
+              <option>อาคาร/สิ่งปลูกสร้าง</option>
+              <option>ระบบไฟฟ้า</option>
+              <option>ระบบน้ำ/ท่อ</option>
+              <option>อื่นๆ</option>
+            </select>
+          </div>
+          <div class="field"><label>เครื่องจักร / ทะเบียนรถ *</label><select id="fj-mc" required></select></div>
+        </div>
+        <div class="field"><label>รายละเอียดปัญหา / อาการ *</label><textarea id="fj-det" rows="3" placeholder="อธิบายอาการที่พบอย่างละเอียด..." required></textarea></div>
+        <div class="field"><label>สถานที่เกิดเหตุ</label><input id="fj-loc" placeholder="อาคาร, แผนก, จุดที่เกิดเหตุ"></div>
+
+        <div class="section-divider"><span>การดำเนินการ</span></div>
+        <div class="grid2">
+          <div class="field"><label>วันที่แจ้ง</label><input type="date" id="fj-date"></div>
+          <div class="field"><label>วันที่คาดว่าจะเสร็จ</label><input type="date" id="fj-due"></div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label>ความเร่งด่วน</label>
+            <select id="fj-ug">
+              <option value="สูง">🔴 สูง — ด่วนมาก</option>
+              <option value="ปานกลาง" selected>🟡 ปานกลาง</option>
+              <option value="ต่ำ">🟢 ต่ำ — ไม่เร่งด่วน</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>สถานะ</label>
+            <select id="fj-st">
+              <option>รอดำเนินการ</option>
+              <option>กำลังซ่อม</option>
+              <option>เสร็จสิ้น</option>
+              <option>ยกเลิก</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>ช่างผู้รับผิดชอบ</label>
+          <select id="fj-tc"></select>
+        </div>
+
+        <div class="section-divider"><span>ผลการดำเนินการ (กรอกเมื่อซ่อมเสร็จ)</span></div>
+        <div class="field"><label>วิธีการแก้ไข / สรุปการซ่อม</label><textarea id="fj-fix" rows="2" placeholder="อธิบายวิธีแก้ปัญหาและสิ่งที่ทำ..."></textarea></div>
+        <div class="grid2">
+          <div class="field"><label>อะไหล่ที่ใช้</label><input id="fj-parts" placeholder="ชื่ออะไหล่, จำนวน..."></div>
+          <div class="field"><label>ค่าใช้จ่าย (บาท)</label><input type="number" id="fj-cost" placeholder="0" min="0" step="0.01"></div>
+        </div>
+        <div class="field">
+          <label>หมายเหตุเพิ่มเติม</label>
+          <input id="fj-note" placeholder="ข้อมูลอื่นๆ ที่ต้องการบันทึก">
+        </div>
+
+        <div id="fj-timeline-wrap" style="display:none">
+          <div class="section-divider"><span>ประวัติการดำเนินงาน</span></div>
+          <ul class="timeline" id="fj-timeline"></ul>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="closeM('m-job')"><i class="ti ti-x"></i>ปิด</button>
+      <button type="button" class="btn" id="fj-print-btn" style="display:none" onclick="printJob()"><i class="ti ti-printer"></i>พิมพ์ใบแจ้งซ่อม</button>
+      <button type="button" class="btn btn-danger" id="fj-del-btn" style="display:none" onclick="deleteJob()"><i class="ti ti-trash"></i>ลบ</button>
+      <button type="submit" form="f-job" class="btn btn-primary" id="fj-btn"><i class="ti ti-device-floppy"></i>บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: TECH FORM
+     ============================================================ -->
+<div id="m-tech" class="mbg" onclick="if(event.target===this)closeM('m-tech')">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-user-edit" style="color:var(--brand)"></i><span id="t-title">เพิ่มช่าง</span></div>
+      <button class="modal-close" onclick="closeM('m-tech')" aria-label="ปิด"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="f-tech" onsubmit="saveTech(event)">
+        <input type="hidden" id="ft-id">
+        <div class="field"><label>ชื่อช่าง *</label><input id="ft-nm" placeholder="ชื่อ-นามสกุล" required></div>
+        <div class="field"><label>เบอร์โทร</label><input id="ft-ph" placeholder="0XX-XXX-XXXX" type="tel"></div>
+        <div class="field"><label>ความเชี่ยวชาญ</label><input id="ft-sk" placeholder="เช่น ไฟฟ้า, เครื่องกล, ท่อ..."></div>
+        <div class="field" id="ft-st-box" style="display:none">
+          <label>สถานะ</label>
+          <select id="ft-st"><option>ใช้งาน</option><option>ไม่ใช้งาน</option></select>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="closeM('m-tech')">ยกเลิก</button>
+      <button type="button" class="btn btn-danger" id="ft-del-btn" style="display:none" onclick="deleteTechConfirm()"><i class="ti ti-trash"></i>ลบ</button>
+      <button type="submit" form="f-tech" class="btn btn-primary" id="ft-btn"><i class="ti ti-device-floppy"></i>บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: MACHINE FORM
+     ============================================================ -->
+<div id="m-mach" class="mbg" onclick="if(event.target===this)closeM('m-mach')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-building-factory-2" style="color:var(--brand)"></i><span id="m-title">เพิ่มเครื่องจักร</span></div>
+      <button class="modal-close" onclick="closeM('m-mach')" aria-label="ปิด"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="f-mach" onsubmit="saveMachine(event)">
+        <input type="hidden" id="fm-old-name">
+        <div class="field"><label>ชื่อเครื่องจักร / ทะเบียนรถ *</label><input id="fm-nm" placeholder="เช่น เครื่อง CNC-01, 1กก-1234" required></div>
+        <div class="field">
+          <label>หมวดหมู่</label>
+          <select id="fm-cat">
+            <option>เครื่องจักร</option>
+            <option>รถขนส่ง</option>
+            <option>อาคาร/สิ่งปลูกสร้าง</option>
+            <option>ระบบไฟฟ้า</option>
+            <option>ระบบน้ำ/ท่อ</option>
+            <option>อื่นๆ</option>
+          </select>
+        </div>
+        <div class="field"><label>สถานที่ตั้ง</label><input id="fm-loc" placeholder="อาคาร, แผนก, จุดที่ตั้ง"></div>
+        <div class="field"><label>หมายเหตุ</label><input id="fm-note" placeholder="ข้อมูลเพิ่มเติม เช่น รุ่น, ปีที่ติดตั้ง"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="closeM('m-mach')">ยกเลิก</button>
+      <button type="button" class="btn btn-danger" id="fm-del-btn" style="display:none" onclick="deleteMachineConfirm()"><i class="ti ti-trash"></i>ลบ</button>
+      <button type="submit" form="f-mach" class="btn btn-primary" id="fm-btn"><i class="ti ti-device-floppy"></i>บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<div class="ver-badge" id="ver-badge">v2.1 · BUILD20260716</div>
+<div id="print-ticket"></div>
+
+<script>
+// ============================================================
+//  GLOBALS
+// ============================================================
+let G_JOBS = [], G_MACHS = [], G_TECHS = [], G_SETTINGS = {}, G_CHARTS = {};
+let G_FILTER = '', G_PAGE = 1, G_PAGE_SIZE = 15;
+const MONTHS_TH = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+const STATUS_LIST = ['รอดำเนินการ','กำลังซ่อม','เสร็จสิ้น','ยกเลิก'];
+const STATUS_COLORS = ['#D97706','#2563EB','#16A34A','#6B7280'];
+
+// ============================================================
+//  CORE
+// ============================================================
+async function init() {
+  setConn('loading', 'ซิงค์ข้อมูล...');
+  showSkeletons();
+  try {
+    const [jobs, machs, techs, settings] = await Promise.all([
+      run('apiGetJobs'), run('apiGetMachines'), run('apiGetTechs'), run('apiGetSettings')
+    ]);
+    G_JOBS = jobs || []; G_MACHS = machs || []; G_TECHS = techs || []; G_SETTINGS = settings || {};
+    afterLoad('ซิงค์แล้ว · ' + G_JOBS.length + ' รายการ');
+  } catch(e) {
+    console.error(e);
+    setConn('err', 'เชื่อมต่อล้มเหลว');
+    toast('⚠️ ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่');
+  }
+}
+
+function showSkeletons() {
+  const met = document.getElementById('d-met');
+  if (met) met.innerHTML = Array(6).fill('<div class="skel skel-met"></div>').join('');
+  const jl = document.getElementById('job-list');
+  if (jl) jl.innerHTML = Array(6).fill('<div class="skel skel-row"></div>').join('');
+}
+
+function afterLoad(connText) {
+  const pending = G_JOBS.filter(j => !['เสร็จสิ้น','ยกเลิก'].includes(j["สถานะ"])).length;
+  setConn('ok', connText || ('ซิงค์แล้ว · ' + G_JOBS.length + ' รายการ'));
+  const pendEl = document.getElementById('nav-pending-count');
+  if (pending > 0) { pendEl.textContent = pending; pendEl.style.display = 'inline'; }
+  else pendEl.style.display = 'none';
+  populateFilters(); renderDash(); renderJobs(); renderTechs(); renderMachines();
+  populateSettingsForm();
+}
+
+async function reloadJobs(connText) {
+  try {
+    G_JOBS = (await run('apiGetJobs')) || [];
+    afterLoad(connText);
+  } catch(e) { console.error(e); setConn('err', 'โหลดข้อมูลล้มเหลว'); }
+}
+async function reloadTechs() {
+  try { G_TECHS = (await run('apiGetTechs')) || []; populateFilters(); renderTechs(); renderDash(); }
+  catch(e) { console.error(e); }
+}
+async function reloadMachines() {
+  try { G_MACHS = (await run('apiGetMachines')) || []; populateFilters(); renderMachines(); }
+  catch(e) { console.error(e); }
+}
+
+async function refreshData() {
+  const btn = document.getElementById('btn-refresh');
+  btn.innerHTML = '<span class="spin"></span>';
+  btn.disabled = true;
+  await init();
+  btn.innerHTML = '<i class="ti ti-refresh"></i>';
+  btn.disabled = false;
+  toast('✅ รีเฟรชข้อมูลแล้ว');
+}
+
+function run(fn, ...args) {
+  return new Promise((res, rej) => {
+    google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args);
+  });
+}
+
+function setConn(t, txt) {
+  const el = document.getElementById('conn');
+  el.className = 'conn conn-' + t;
+  el.innerHTML = (t === 'loading' ? '<span class="spin"></span>' : '') + `<span>${txt}</span>`;
+}
+
+function go(p, btn) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(x => x.classList.remove('on'));
+  document.getElementById('p-' + p).classList.add('on');
+  btn.classList.add('on');
+  const titles = {dash:'แดชบอร์ด', jobs:'รายการซ่อม', rep:'รายงานสรุป', techs:'ทีมช่าง', mach:'เครื่องจักร / ยานพาหนะ', set:'ตั้งค่า'};
+  document.getElementById('topbar-title').textContent = titles[p] || '';
+  if (p === 'rep') renderReports();
+  if (p === 'set') populateSettingsForm();
+  closeSidebar();
+  window.scrollTo(0,0);
+}
+
+function openM(id) { document.getElementById(id).classList.add('on'); }
+function closeM(id) { document.getElementById(id).classList.remove('on'); }
+function toast(m, dur=3200) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('on');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('on'), dur);
+}
+
+function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('scrim').classList.add('on'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('scrim').classList.remove('on'); }
+
+function debounce(fn, ms=250) {
+  let h;
+  return function(){ clearTimeout(h); h = setTimeout(()=>fn.apply(this,arguments), ms); };
+}
+const onSearchInput = debounce(() => { G_PAGE = 1; renderJobs(); }, 250);
+
+// ---------- THEME ----------
+function applyTheme(mode) {
+  const root = document.documentElement;
+  const icon = document.querySelector('#theme-toggle i');
+  if (mode === 'dark') { root.classList.add('dark'); if(icon){icon.className='ti ti-sun';} }
+  else { root.classList.remove('dark'); if(icon){icon.className='ti ti-moon';} }
+}
+function toggleTheme() {
+  const mode = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+  applyTheme(mode);
+  try { localStorage.setItem('rd_theme', mode); } catch(e){}
+  renderDash();
+  if (document.getElementById('p-rep').classList.contains('on')) renderReports();
+}
+
+// ============================================================
+//  DATE HELPERS (fix UTC off-by-one)
+// ============================================================
+function parseDate(s) {
+  if (!s) return null;
+  const m1 = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m1) return new Date(+m1[1], +m1[2]-1, +m1[3]);
+  const m2 = String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m2) return new Date(+m2[3], +m2[2]-1, +m2[1]);
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+function todayStr() { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function isOverdue(j) {
+  if (['เสร็จสิ้น','ยกเลิก'].includes(j["สถานะ"])) return false;
+  if (!j["วันที่คาดว่าจะเสร็จ"]) return false;
+  const due = parseDate(j["วันที่คาดว่าจะเสร็จ"]);
+  if (!due) return false;
+  return due.getTime() < new Date(todayStr()).getTime();
+}
+
+// ============================================================
+//  FILTERS & DROPDOWNS
+// ============================================================
+function populateFilters() {
+  const mSel = document.getElementById('rep-m');
+  const ySel = document.getElementById('rep-y');
+  const mcSel = document.getElementById('rep-mach');
+  const techSel = document.getElementById('rep-tech');
+
+  if (mSel && !mSel.options.length) mSel.innerHTML = MONTHS_TH.map((m,i) =>
+    `<option value="${i+1}" ${new Date().getMonth()===i?'selected':''}>${m}</option>`).join('');
+  const year = new Date().getFullYear();
+  if (ySel && !ySel.options.length) ySel.innerHTML = [year, year-1, year-2].map(y =>
+    `<option value="${y}">${y + 543}</option>`).join('');
+  if (mcSel) mcSel.innerHTML = '<option value="">ทั้งหมด</option>' +
+    G_MACHS.map(m => `<option>${escHtml(m["ชื่อเครื่องจักร/ทะเบียนรถ"])}</option>`).join('');
+  if (techSel) {
+    const names = [...new Set(G_TECHS.map(t => (t["ชื่อช่าง"]||'').trim()).filter(n=>n))];
+    techSel.innerHTML = '<option value="">ทั้งหมด</option>' + names.map(n => `<option>${escHtml(n)}</option>`).join('');
+  }
+
+  const fjMc = document.getElementById('fj-mc');
+  if (fjMc) fjMc.innerHTML = '<option value="" disabled selected>เลือกเครื่องจักร...</option>' +
+    G_MACHS.map(m => `<option value="${escHtml(m["ชื่อเครื่องจักร/ทะเบียนรถ"])}" data-cat="${escHtml(m["หมวดหมู่"]||'')}">${escHtml(m["ชื่อเครื่องจักร/ทะเบียนรถ"])}</option>`).join('');
+
+  const sqTech = document.getElementById('sq-tech');
+  if (sqTech) {
+    const names = [...new Set(G_TECHS.map(t => (t["ชื่อช่าง"]||'').trim()).filter(n=>n))];
+    sqTech.innerHTML = '<option value="">ช่าง: ทั้งหมด</option>' + names.map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`).join('');
+  }
+
+  renderTechOptions();
+}
+
+function syncMachineCategory() {
+  const mcSel = document.getElementById('fj-mc');
+  const opt = mcSel.options[mcSel.selectedIndex];
+  const cat = opt && opt.getAttribute('data-cat');
+  if (cat) document.getElementById('fj-cat').value = cat;
+}
+
+function renderTechOptions(current = '') {
+  const el = document.getElementById('fj-tc');
+  if (!el) return;
+  const cur = (current || '').trim();
+  let techs = G_TECHS.filter(t => {
+    const n = (t["ชื่อช่าง"]||'').trim();
+    const s = (t["สถานะ"]||'').trim();
+    return n && (s === 'ใช้งาน' || n === cur);
+  });
+  if (techs.length === 0) techs = G_TECHS.filter(t => (t["ชื่อช่าง"]||'').trim());
+  const names = [...new Set(techs.map(t => (t["ชื่อช่าง"]||'').trim()).filter(n=>n))];
+  if (cur && !names.includes(cur)) names.unshift(cur);
+  el.innerHTML = '<option value="">— ยังไม่มอบหมาย —</option>' +
+    names.map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`).join('');
+  if (cur) el.value = cur;
+}
+
+// ============================================================
+//  DASHBOARD
+// ============================================================
+function renderDash() {
+  const s = {
+    tot:    G_JOBS.length,
+    wait:   G_JOBS.filter(j => j["สถานะ"] === 'รอดำเนินการ').length,
+    prog:   G_JOBS.filter(j => j["สถานะ"] === 'กำลังซ่อม').length,
+    done:   G_JOBS.filter(j => j["สถานะ"] === 'เสร็จสิ้น').length,
+    pend:   G_JOBS.filter(j => !['เสร็จสิ้น','ยกเลิก'].includes(j["สถานะ"])).length,
+    hi:     G_JOBS.filter(j => j["ความเร่งด่วน"] === 'สูง' && !['เสร็จสิ้น','ยกเลิก'].includes(j["สถานะ"])).length,
+    overdue:G_JOBS.filter(isOverdue).length,
+    cost:   G_JOBS.reduce((s,j) => s + (parseFloat(j["ค่าใช้จ่าย"])||0), 0)
+  };
+
+  document.getElementById('d-met').innerHTML = `
+    <div class="met blue"><i class="ti ti-clipboard-list met-icon"></i><span class="met-val">${s.tot}</span><span class="met-lbl">ทั้งหมด</span></div>
+    <div class="met orange"><i class="ti ti-clock met-icon"></i><span class="met-val">${s.wait}</span><span class="met-lbl">รอดำเนินการ</span></div>
+    <div class="met blue"><i class="ti ti-tool met-icon"></i><span class="met-val">${s.prog}</span><span class="met-lbl">กำลังซ่อม</span></div>
+    <div class="met green"><i class="ti ti-circle-check met-icon"></i><span class="met-val">${s.done}</span><span class="met-lbl">เสร็จสิ้น</span></div>
+    <div class="met red"><i class="ti ti-alert-triangle met-icon"></i><span class="met-val">${s.overdue}</span><span class="met-lbl">เลยกำหนด</span></div>
+    <div class="met teal"><i class="ti ti-coin met-icon"></i><span class="met-val" style="font-size:20px">${s.cost.toLocaleString('th-TH',{maximumFractionDigits:0})} ฿</span><span class="met-lbl">ค่าใช้จ่ายรวม</span></div>
+  `;
+
+  const hiJobs = G_JOBS.filter(j => (j["ความเร่งด่วน"] === 'สูง' && !['เสร็จสิ้น','ยกเลิก'].includes(j["สถานะ"])) || isOverdue(j))
+    .sort((a,b)=> (isOverdue(b)?1:0)-(isOverdue(a)?1:0));
+  document.getElementById('d-hi-count').textContent = hiJobs.length + ' งาน';
+  document.getElementById('d-hi').innerHTML = hiJobs.length ? hiJobs.slice(0,8).map(j => {
+    const od = isOverdue(j);
+    return `
+    <div class="job-row${od?' overdue':''}" onclick="openJobForm('${escAttr(j["รหัสแจ้งซ่อม"])}')">
+      <div class="job-row-id">${escHtml(j["รหัสแจ้งซ่อม"])}</div>
+      <div class="job-row-body">
+        <div class="job-row-main">${escHtml(j["ชื่อเครื่องจักร/ทะเบียนรถ"]||'-')}</div>
+        <div class="job-row-sub">${escHtml(j["ชื่อผู้แจ้ง"])} · ${escHtml(j["ช่างผู้รับผิดชอบ"]||'ยังไม่มอบหมาย')}${od?' · ⏰ เลยกำหนด':''}</div>
+      </div>
+      ${od?'<span class="badge bh">เลยกำหนด</span>':'<span class="badge bh">ด่วนสูง</span>'}
+    </div>`;
+  }).join('') : '<div class="empty-state"><i class="ti ti-mood-happy"></i><p>ไม่มีงานด่วนหรือเลยกำหนด</p></div>';
+
+  const recent = [...G_JOBS].sort((a,b) => String(b["รหัสแจ้งซ่อม"]).localeCompare(String(a["รหัสแจ้งซ่อม"]))).slice(0,6);
+  document.getElementById('d-recent').innerHTML = recent.length ? recent.map(j => `
+    <div class="job-row" onclick="openJobForm('${escAttr(j["รหัสแจ้งซ่อม"])}')">
+      <div class="job-row-id">${escHtml(j["รหัสแจ้งซ่อม"])}</div>
+      <div class="job-row-body">
+        <div class="job-row-main">${escHtml(j["ชื่อผู้แจ้ง"])} — ${escHtml(j["ชื่อเครื่องจักร/ทะเบียนรถ"]||'-')}</div>
+        <div class="job-row-sub">${escHtml(j["วันที่แจ้ง"]||'')} · ${escHtml(j["หมวดหมู่"]||'')}</div>
+      </div>
+      <span class="badge ${statusBadge(j["สถานะ"])}">${escHtml(j["สถานะ"])}</span>
+    </div>`).join('') : '<div class="empty-state"><i class="ti ti-clipboard-x"></i><p>ยังไม่มีข้อมูล</p></div>';
+
+  const techWork = {};
+  G_JOBS.filter(j => !['เสร็จสิ้น','ยกเลิก'].includes(j["สถานะ"])).forEach(j => {
+    const t = j["ช่างผู้รับผิดชอบ"] || 'ยังไม่มอบหมาย';
+    techWork[t] = (techWork[t]||0) + 1;
+  });
+  const maxLoad = Math.max(...Object.values(techWork), 1);
+  const techHtml = Object.entries(techWork).sort((a,b)=>b[1]-a[1]).map(([name,cnt]) => `
+    <div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="width:140px;font-weight:600;font-size:13px;color:var(--text);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(name)}</div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px;color:var(--text2)">${cnt} งานค้าง</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(cnt/maxLoad*100)}%"></div></div>
+      </div>
+      <span class="badge ${cnt >= 5 ? 'bh' : cnt >= 3 ? 'bw' : 'bd'}">${cnt}</span>
+    </div>`).join('');
+  document.getElementById('d-techload').innerHTML = techHtml || '<div class="empty-state"><p>ไม่มีงานค้างที่มอบหมาย</p></div>';
+
+  // Dashboard charts
+  const statusCounts = STATUS_LIST.map(st => G_JOBS.filter(j=>j["สถานะ"]===st).length);
+  const trendData = Array(12).fill(0);
+  const curYear = new Date().getFullYear();
+  G_JOBS.forEach(j => { const d = parseDate(j["วันที่แจ้ง"]); if (d && d.getFullYear() === curYear) trendData[d.getMonth()]++; });
+
+  const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+  const tickColor = document.documentElement.classList.contains('dark') ? '#94A3B8' : '#475569';
+
+  initChart('ch-dash-status', 'doughnut', {
+    labels: STATUS_LIST,
+    datasets:[{ data: statusCounts, backgroundColor: STATUS_COLORS, borderWidth:2, borderColor:getCssVar('--surface') }]
+  }, {cutout:'62%',plugins:{legend:{position:'bottom'}}});
+
+  initChart('ch-dash-trend', 'bar', {
+    labels: MONTHS_TH.map(m => m.substring(0,3)),
+    datasets:[{ label:'จำนวนแจ้งซ่อม', data: trendData,
+      backgroundColor: hexToRgba(getCssVar('--brand'),0.18), borderColor:getCssVar('--brand'),
+      borderWidth:2, borderRadius:6 }]
+  }, {scales:{y:{beginAtZero:true,ticks:{color:tickColor},grid:{color:gridColor}},x:{ticks:{color:tickColor},grid:{display:false}}},plugins:{legend:{display:false}}});
+}
+
+// ============================================================
+//  JOBS LIST
+// ============================================================
+function setFilter(status, el) {
+  G_FILTER = status;
+  G_PAGE = 1;
+  document.querySelectorAll('.ftab').forEach(x => x.classList.remove('on'));
+  el.classList.add('on');
+  renderJobs();
+}
+
+function getFilteredJobs() {
+  const q = (document.getElementById('sq').value || '').toLowerCase().trim();
+  const urg = document.getElementById('sq-urg') ? document.getElementById('sq-urg').value : '';
+  const tech = document.getElementById('sq-tech') ? document.getElementById('sq-tech').value : '';
+  let f = G_JOBS.filter(j => {
+    const matchQ = !q ||
+      (j["รหัสแจ้งซ่อม"]||'').toLowerCase().includes(q) ||
+      (j["ชื่อเครื่องจักร/ทะเบียนรถ"]||'').toLowerCase().includes(q) ||
+      (j["ชื่อผู้แจ้ง"]||'').toLowerCase().includes(q) ||
+      (j["รายละเอียดปัญหา"]||'').toLowerCase().includes(q) ||
+      (j["ช่างผู้รับผิดชอบ"]||'').toLowerCase().includes(q);
+    const matchStatus = G_FILTER === 'overdue' ? isOverdue(j) : (!G_FILTER || j["สถานะ"] === G_FILTER);
+    const matchUrg = !urg || j["ความเร่งด่วน"] === urg;
+    const matchTech = !tech || j["ช่างผู้รับผิดชอบ"] === tech;
+    return matchQ && matchStatus && matchUrg && matchTech;
+  });
+  return [...f].sort((a,b) => String(b["รหัสแจ้งซ่อม"]).localeCompare(String(a["รหัสแจ้งซ่อม"])));
+}
+
+function renderJobs() {
+  const f = getFilteredJobs();
+  const total = f.length;
+  const pages = Math.max(1, Math.ceil(total / G_PAGE_SIZE));
+  if (G_PAGE > pages) G_PAGE = pages;
+  const start = (G_PAGE-1) * G_PAGE_SIZE;
+  const pageItems = f.slice(start, start + G_PAGE_SIZE);
+
+  if (!total) {
+    document.getElementById('job-list').innerHTML = `<div class="empty-state"><i class="ti ti-search-off"></i><p>ไม่พบรายการที่ค้นหา</p></div>`;
+    document.getElementById('job-pager').innerHTML = '';
+    return;
+  }
+  document.getElementById('job-list').innerHTML = pageItems.map(j => {
+    const od = isOverdue(j);
+    return `
+    <div class="job-row${od?' overdue':''}" onclick="openJobForm('${escAttr(j["รหัสแจ้งซ่อม"])}')">
+      <div class="job-row-id">${escHtml(j["รหัสแจ้งซ่อม"])}</div>
+      <div class="job-row-body">
+        <div class="job-row-main">${escHtml(j["ชื่อผู้แจ้ง"])} — ${escHtml(j["ชื่อเครื่องจักร/ทะเบียนรถ"]||'-')}</div>
+        <div class="job-row-sub">${escHtml(j["วันที่แจ้ง"]||'')} · ${escHtml(j["รายละเอียดปัญหา"]||'')}${j["ช่างผู้รับผิดชอบ"] ? ' · '+escHtml(j["ช่างผู้รับผิดชอบ"]) : ''}</div>
+      </div>
+      <div class="job-row-badges">
+        ${od?'<span class="badge bh">เลยกำหนด</span>':''}
+        <span class="badge ${urgBadge(j["ความเร่งด่วน"])}">${escHtml(j["ความเร่งด่วน"]||'')}</span>
+        <span class="badge ${statusBadge(j["สถานะ"])}">${escHtml(j["สถานะ"]||'')}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  const pager = document.getElementById('job-pager');
+  if (pages <= 1) { pager.innerHTML = ''; return; }
+  let html = `<button onclick="gotoPage(1)" ${G_PAGE===1?'disabled':''}><i class="ti ti-chevron-left-pipe"></i></button>`;
+  html += `<button onclick="gotoPage(${G_PAGE-1})" ${G_PAGE===1?'disabled':''}><i class="ti ti-chevron-left"></i></button>`;
+  const win = 2;
+  for (let p=1; p<=pages; p++) {
+    if (p===1 || p===pages || (p>=G_PAGE-win && p<=G_PAGE+win)) {
+      html += `<button class="${p===G_PAGE?'on':''}" onclick="gotoPage(${p})">${p}</button>`;
+    } else if (p===G_PAGE-win-1 || p===G_PAGE+win+1) {
+      html += `<button disabled>…</button>`;
+    }
+  }
+  html += `<button onclick="gotoPage(${G_PAGE+1})" ${G_PAGE===pages?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
+  html += `<button onclick="gotoPage(${pages})" ${G_PAGE===pages?'disabled':''}><i class="ti ti-chevron-right-pipe"></i></button>`;
+  html += `<span style="font-size:11px;color:var(--text3);align-self:center">${start+1}-${Math.min(start+G_PAGE_SIZE,total)} / ${total}</span>`;
+  pager.innerHTML = html;
+}
+function gotoPage(p){ G_PAGE = p; renderJobs(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+// ============================================================
+//  REPORTS
+// ============================================================
+function renderReports() {
+  const m = parseInt(document.getElementById('rep-m').value);
+  const y = parseInt(document.getElementById('rep-y').value);
+  const mach = document.getElementById('rep-mach').value;
+  const techF = document.getElementById('rep-tech').value;
+
+  const filtered = G_JOBS.filter(j => {
+    const d = parseDate(j["วันที่แจ้ง"]);
+    const ok = d && d.getMonth()+1 === m && d.getFullYear() === y;
+    const okM = !mach || j["ชื่อเครื่องจักร/ทะเบียนรถ"] === mach;
+    const okT = !techF || j["ช่างผู้รับผิดชอบ"] === techF;
+    return ok && okM && okT;
+  });
+
+  const done = filtered.filter(j => j["สถานะ"] === 'เสร็จสิ้น').length;
+  const prog = filtered.filter(j => j["สถานะ"] === 'กำลังซ่อม').length;
+  const wait = filtered.filter(j => j["สถานะ"] === 'รอดำเนินการ').length;
+  const cancel = filtered.filter(j => j["สถานะ"] === 'ยกเลิก').length;
+  const totalCost = filtered.reduce((s,j) => s + (parseFloat(j["ค่าใช้จ่าย"])||0), 0);
+  const rate = filtered.length ? Math.round(done/filtered.length*100) : 0;
+
+  document.getElementById('rep-stats').innerHTML = `
+    <div class="met blue"><i class="ti ti-clipboard-list met-icon"></i><span class="met-val">${filtered.length}</span><span class="met-lbl">แจ้งซ่อมในงวด</span></div>
+    <div class="met green"><i class="ti ti-circle-check met-icon"></i><span class="met-val">${done}</span><span class="met-lbl">ซ่อมเสร็จ</span></div>
+    <div class="met orange"><i class="ti ti-clock met-icon"></i><span class="met-val">${wait + prog}</span><span class="met-lbl">ยังค้างอยู่</span></div>
+    <div class="met blue"><i class="ti ti-percentage met-icon"></i><span class="met-val">${rate}%</span><span class="met-lbl">อัตราสำเร็จ</span></div>
+    <div class="met teal"><i class="ti ti-coin met-icon"></i><span class="met-val" style="font-size:18px">${totalCost.toLocaleString('th-TH',{maximumFractionDigits:0})} ฿</span><span class="met-lbl">ค่าใช้จ่ายรวม</span></div>
+  `;
+  document.getElementById('rep-list-count').textContent = filtered.length + ' รายการ';
+
+  const urg = {'สูง':0,'ปานกลาง':0,'ต่ำ':0};
+  filtered.forEach(j => { if(urg.hasOwnProperty(j["ความเร่งด่วน"])) urg[j["ความเร่งด่วน"]]++; });
+  initChart('ch-urg', 'pie', {
+    labels: ['สูง','ปานกลาง','ต่ำ'],
+    datasets:[{data:[urg['สูง'],urg['ปานกลาง'],urg['ต่ำ']],backgroundColor:['#DC2626','#D97706','#16A34A'],borderWidth:2,borderColor:getCssVar('--surface')}]
+  }, {plugins:{legend:{position:'bottom'}}});
+
+  initChart('ch-done', 'doughnut', {
+    labels:['เสร็จสิ้น','กำลังซ่อม','รอดำเนินการ','ยกเลิก'],
+    datasets:[{ data:[done, prog, wait, cancel], backgroundColor:STATUS_COLORS, borderWidth:2,borderColor:getCssVar('--surface') }]
+  }, {cutout:'65%',plugins:{legend:{position:'bottom'}}});
+
+  const trendData = Array(12).fill(0);
+  G_JOBS.forEach(j => { const d = parseDate(j["วันที่แจ้ง"]); if (d && d.getFullYear() === y) trendData[d.getMonth()]++; });
+
+  const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+  const tickColor = document.documentElement.classList.contains('dark') ? '#94A3B8' : '#475569';
+
+  initChart('ch-trend', 'bar', {
+    labels: MONTHS_TH.map(m => m.substring(0,3)),
+    datasets:[{ label:'จำนวนแจ้งซ่อม', data: trendData,
+      backgroundColor: hexToRgba(getCssVar('--brand'),0.18), borderColor:getCssVar('--brand'),
+      borderWidth:2, borderRadius:6 }]
+  }, {scales:{y:{beginAtZero:true,ticks:{color:tickColor},grid:{color:gridColor}},x:{ticks:{color:tickColor},grid:{display:false}}},plugins:{legend:{display:false}}});
+
+  const techStats = {};
+  filtered.forEach(j => {
+    const t = j["ช่างผู้รับผิดชอบ"] || 'ยังไม่มอบหมาย';
+    if (!techStats[t]) techStats[t] = {total:0, done:0, cost:0};
+    techStats[t].total++;
+    if (j["สถานะ"] === 'เสร็จสิ้น') techStats[t].done++;
+    techStats[t].cost += parseFloat(j["ค่าใช้จ่าย"])||0;
+  });
+  const techRows = Object.entries(techStats).sort((a,b)=>b[1].done-a[1].done);
+  document.getElementById('rep-tech-table').innerHTML = techRows.length ? `
+    <table class="data-table">
+      <thead><tr>
+        <th>ช่าง</th><th style="text-align:center">งานทั้งหมด</th><th style="text-align:center">เสร็จสิ้น</th><th>อัตราสำเร็จ</th><th style="text-align:right">ค่าใช้จ่ายรวม</th>
+      </tr></thead>
+      <tbody>
+        ${techRows.map(([name,s]) => {
+          const r = s.total ? Math.round(s.done/s.total*100) : 0;
+          return `<tr>
+            <td style="font-weight:600">${escHtml(name)}</td>
+            <td style="text-align:center">${s.total}</td>
+            <td style="text-align:center"><span class="badge bd">${s.done}</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="flex:1"><div class="progress-bar"><div class="progress-fill" style="width:${r}%"></div></div></div>
+                <span style="font-size:11px;font-weight:700;color:var(--text2);min-width:35px">${r}%</span>
+              </div>
+            </td>
+            <td style="text-align:right;font-weight:600;color:var(--c-done)">${s.cost.toLocaleString('th-TH',{maximumFractionDigits:0})} ฿</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>` : '<div class="empty-state"><p>ไม่มีข้อมูลช่างในงวดนี้</p></div>';
+
+  const machStats = {};
+  filtered.forEach(j => {
+    const mN = j["ชื่อเครื่องจักร/ทะเบียนรถ"] || 'ไม่ระบุ';
+    if (!machStats[mN]) machStats[mN] = {count:0, cost:0};
+    machStats[mN].count++;
+    machStats[mN].cost += parseFloat(j["ค่าใช้จ่าย"])||0;
+  });
+  const machRows = Object.entries(machStats).sort((a,b)=>b[1].count-a[1].count).slice(0,10);
+  const maxMachCount = machRows.length ? machRows[0][1].count : 1;
+  document.getElementById('rep-mach-table').innerHTML = machRows.length ? `
+    <table class="data-table">
+      <thead><tr>
+        <th>เครื่องจักร / ทะเบียน</th><th style="text-align:center">ครั้งที่ซ่อม</th><th>สัดส่วน</th><th style="text-align:right">ค่าใช้จ่ายรวม</th>
+      </tr></thead>
+      <tbody>
+        ${machRows.map(([name,s], idx) => `
+          <tr>
+            <td style="font-weight:600">${idx===0?'🥇 ':''}${escHtml(name)}</td>
+            <td style="text-align:center"><span class="badge ${idx===0?'bh':'b-brand'}">${s.count} ครั้ง</span></td>
+            <td><div class="progress-bar"><div class="progress-fill" style="width:${Math.round(s.count/maxMachCount*100)}%"></div></div></td>
+            <td style="text-align:right;color:var(--text2)">${s.cost.toLocaleString('th-TH',{maximumFractionDigits:0})} ฿</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>` : '<div class="empty-state"><p>ไม่มีข้อมูลเครื่องจักรในงวดนี้</p></div>';
+
+  document.getElementById('rep-list').innerHTML = filtered.length ? filtered.map(j => `
+    <div class="job-row" onclick="openJobForm('${escAttr(j["รหัสแจ้งซ่อม"])}')">
+      <div class="job-row-id">${escHtml(j["รหัสแจ้งซ่อม"])}</div>
+      <div class="job-row-body">
+        <div class="job-row-main">${escHtml(j["ชื่อเครื่องจักร/ทะเบียนรถ"]||'-')} — ${escHtml(j["ชื่อผู้แจ้ง"]||'')}</div>
+        <div class="job-row-sub">${escHtml(j["วันที่แจ้ง"]||'')} · ${escHtml(j["รายละเอียดปัญหา"]||'')}${j["ค่าใช้จ่าย"] ? ' · '+parseFloat(j["ค่าใช้จ่าย"]).toLocaleString('th-TH')+'฿' : ''}</div>
+      </div>
+      <span class="badge ${statusBadge(j["สถานะ"])}">${escHtml(j["สถานะ"])}</span>
+    </div>`).join('') : '<div class="empty-state"><i class="ti ti-calendar-off"></i><p>ไม่มีงานในงวดนี้</p></div>';
+}
+
+// ============================================================
+//  MACHINES
+// ============================================================
+function renderMachines() {
+  const tbody = document.getElementById('mach-body');
+  if (!tbody) return;
+  if (!G_MACHS.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text3)">ยังไม่มีข้อมูลเครื่องจักร — กด "เพิ่มรายการ" เพื่อเริ่ม</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = G_MACHS.map(m => {
+    const name = m["ชื่อเครื่องจักร/ทะเบียนรถ"];
+    const jobCount = G_JOBS.filter(j => j["ชื่อเครื่องจักร/ทะเบียนรถ"] === name).length;
+    const openCount = G_JOBS.filter(j => j["ชื่อเครื่องจักร/ทะเบียนรถ"] === name && !['เสร็จสิ้น','ยกเลิก'].includes(j["สถานะ"])).length;
+    return `<tr>
+      <td style="font-weight:600">${escHtml(name)}</td>
+      <td>${escHtml(m["หมวดหมู่"]||'-')}</td>
+      <td>${escHtml(m["สถานที่ตั้ง"]||'-')}</td>
+      <td>${openCount>0 ? `<span class="badge bh">${openCount} เปิด</span> / ` : ''}<span style="color:var(--text3)">${jobCount} ทั้งหมด</span></td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn btn-sm btn-icon" title="แก้ไข" onclick="openMachineForm('${escAttr(name)}')"><i class="ti ti-edit"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openMachineForm(name = null) {
+  const m = name ? G_MACHS.find(x => x["ชื่อเครื่องจักร/ทะเบียนรถ"] === name) : null;
+  document.getElementById('m-title').textContent = m ? 'แก้ไขเครื่องจักร' : 'เพิ่มเครื่องจักร';
+  document.getElementById('fm-old-name').value = name || '';
+  document.getElementById('fm-del-btn').style.display = m ? 'inline-flex' : 'none';
+  document.getElementById('f-mach').reset();
+  if (m) {
+    document.getElementById('fm-nm').value = m["ชื่อเครื่องจักร/ทะเบียนรถ"]||'';
+    document.getElementById('fm-cat').value = m["หมวดหมู่"]||'เครื่องจักร';
+    document.getElementById('fm-loc').value = m["สถานที่ตั้ง"]||'';
+    document.getElementById('fm-note').value = m["หมายเหตุ"]||'';
+  }
+  openM('m-mach');
+}
+
+async function saveMachine(e) {
+  e.preventDefault();
+  const oldName = document.getElementById('fm-old-name').value;
+  const data = {
+    "ชื่อเครื่องจักร/ทะเบียนรถ": document.getElementById('fm-nm').value.trim(),
+    "หมวดหมู่": document.getElementById('fm-cat').value,
+    "สถานที่ตั้ง": document.getElementById('fm-loc').value,
+    "หมายเหตุ": document.getElementById('fm-note').value,
+  };
+  const btn = document.getElementById('fm-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> บันทึก...';
+  try {
+    const res = await run('apiPost', JSON.stringify({ action: oldName ? 'updateMachine' : 'addMachine', oldName, data }));
+    if (!res.success) throw new Error(res.message);
+    closeM('m-mach');
+    await reloadMachines();
+    await reloadJobs();
+    toast('✅ ' + res.message);
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i>บันทึก';
+  }
+}
+
+async function deleteMachineConfirm() {
+  const name = document.getElementById('fm-old-name').value;
+  if (!name) return;
+  const r = await Swal.fire({
+    icon:'warning', title:'ยืนยันการลบ',
+    html:`ต้องการลบ "<b>${escHtml(name)}</b>" ใช่หรือไม่?<br><span style="font-size:12px;color:#94A3B8">(รายการซ่อมที่อ้างถึงจะไม่ถูกลบ)</span>`,
+    showCancelButton:true, confirmButtonText:'ลบ', confirmButtonColor:'#C62828', cancelButtonText:'ยกเลิก'
+  });
+  if (!r.isConfirmed) return;
+  try {
+    const res = await run('apiPost', JSON.stringify({action:'deleteMachine', name}));
+    if (!res.success) throw new Error(res.message);
+    closeM('m-mach');
+    await reloadMachines();
+    toast('🗑️ ลบเครื่องจักรแล้ว');
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  }
+}
+
+// ============================================================
+//  TECHS
+// ============================================================
+function renderTechs() {
+  const container = document.getElementById('tech-list');
+  if (!G_TECHS.length) {
+    container.innerHTML = '<div class="empty-state"><i class="ti ti-user-x"></i><p>ยังไม่มีข้อมูลช่าง</p></div>';
+    return;
+  }
+  container.innerHTML = G_TECHS.map(t => {
+    const initial = (t["ชื่อช่าง"]||'?').charAt(0).toUpperCase();
+    const jobCount = G_JOBS.filter(j => j["ช่างผู้รับผิดชอบ"] === t["ชื่อช่าง"] && !['เสร็จสิ้น','ยกเลิก'].includes(j["สถานะ"])).length;
+    return `
+    <div class="tech-card">
+      <div class="tech-avatar">${escHtml(initial)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="tech-name">${escHtml(t["ชื่อช่าง"]||'')}</div>
+        <div class="tech-skill">${escHtml(t["ความเชี่ยวชาญ"]||'ทั่วไป')}</div>
+        <div class="tech-phone"><i class="ti ti-phone" style="font-size:12px"></i>${escHtml(t["เบอร์โทร"]||'-')}</div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          <span class="badge ${t["สถานะ"]==='ใช้งาน'?'bd':'bc'}">${escHtml(t["สถานะ"]||'ใช้งาน')}</span>
+          ${jobCount > 0 ? `<span class="badge bw">${jobCount} งานค้าง</span>` : ''}
+        </div>
+      </div>
+      <div class="tech-actions">
+        <button class="btn btn-sm btn-icon" title="แก้ไข" onclick="openTechForm('${escAttr(t["รหัสช่าง"])}')">
+          <i class="ti ti-edit"></i>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+//  JOB FORM
+// ============================================================
+async function openJobForm(id = null) {
+  const j = id ? G_JOBS.find(x => x["รหัสแจ้งซ่อม"] === id) : null;
+  document.getElementById('j-title').textContent = j ? `แก้ไขใบแจ้งซ่อม ${id}` : 'แจ้งซ่อมใหม่';
+  document.getElementById('fj-id').value = id || '';
+  document.getElementById('fj-print-btn').style.display = j ? 'inline-flex' : 'none';
+  document.getElementById('fj-del-btn').style.display = j ? 'inline-flex' : 'none';
+
+  const today = todayStr();
+  if (!j) {
+    document.getElementById('f-job').reset();
+    document.getElementById('fj-date').value = today;
+    document.getElementById('fj-old-status').value = 'รอดำเนินการ';
+    renderTechOptions();
+    document.getElementById('fj-timeline-wrap').style.display = 'none';
+  } else {
+    document.getElementById('fj-cust').value = j["ชื่อผู้แจ้ง"]||'';
+    document.getElementById('fj-ph').value   = j["เบอร์โทร"]||'';
+    document.getElementById('fj-cat').value  = j["หมวดหมู่"]||'เครื่องจักร';
+    document.getElementById('fj-mc').value   = j["ชื่อเครื่องจักร/ทะเบียนรถ"]||'';
+    document.getElementById('fj-det').value  = j["รายละเอียดปัญหา"]||'';
+    document.getElementById('fj-loc').value  = j["สถานที่"]||'';
+    document.getElementById('fj-date').value = j["วันที่แจ้ง"]||today;
+    document.getElementById('fj-due').value  = j["วันที่คาดว่าจะเสร็จ"]||'';
+    document.getElementById('fj-ug').value   = j["ความเร่งด่วน"]||'ปานกลาง';
+    document.getElementById('fj-st').value   = j["สถานะ"]||'รอดำเนินการ';
+    document.getElementById('fj-old-status').value = j["สถานะ"]||'รอดำเนินการ';
+    document.getElementById('fj-fix').value  = j["วิธีการแก้ไข"]||'';
+    document.getElementById('fj-parts').value= j["อะไหล่ที่ใช้"]||'';
+    document.getElementById('fj-cost').value = j["ค่าใช้จ่าย"]||'';
+    document.getElementById('fj-note').value = j["หมายเหตุ"]||'';
+    renderTechOptions(j["ช่างผู้รับผิดชอบ"]||'');
+    await loadTimeline(id);
+  }
+  openM('m-job');
+}
+
+async function loadTimeline(jobId) {
+  const wrap = document.getElementById('fj-timeline-wrap');
+  const ul = document.getElementById('fj-timeline');
+  if (!jobId) { wrap.style.display='none'; return; }
+  try {
+    const items = await run('apiGetTimeline', jobId);
+    if (!items || !items.length) { wrap.style.display='none'; return; }
+    wrap.style.display = 'block';
+    ul.innerHTML = items.map(t => `
+      <li class="tl-item">
+        <div class="tl-time">${escHtml(t["วันเวลา"]||'')}</div>
+        <div class="tl-body"><b>${escHtml(t["สถานะเดิม"]||'เริ่มต้น')}</b> → <b>${escHtml(t["สถานะใหม่"]||'')}</b>
+          ${t["ช่างผู้รับผิดชอบ"]? ' · '+escHtml(t["ช่างผู้รับผิดชอบ"]):''}
+          ${t["หมายเหตุ"]? ' · '+escHtml(t["หมายเหตุ"]):''}
+        </div>
+      </li>`).join('');
+  } catch(e) { wrap.style.display='none'; }
+}
+
+async function saveJob(e) {
+  e.preventDefault();
+  const id = document.getElementById('fj-id').value;
+  const oldStatus = document.getElementById('fj-old-status').value;
+  const data = {
+    "ชื่อผู้แจ้ง":              document.getElementById('fj-cust').value.trim(),
+    "เบอร์โทร":                  document.getElementById('fj-ph').value.trim(),
+    "หมวดหมู่":                  document.getElementById('fj-cat').value,
+    "ชื่อเครื่องจักร/ทะเบียนรถ": document.getElementById('fj-mc').value,
+    "รายละเอียดปัญหา":           document.getElementById('fj-det').value.trim(),
+    "สถานที่":                   document.getElementById('fj-loc').value.trim(),
+    "วันที่แจ้ง":                document.getElementById('fj-date').value || todayStr(),
+    "วันที่คาดว่าจะเสร็จ":       document.getElementById('fj-due').value,
+    "ความเร่งด่วน":              document.getElementById('fj-ug').value,
+    "สถานะ":                     document.getElementById('fj-st').value,
+    "ช่างผู้รับผิดชอบ":          document.getElementById('fj-tc').value,
+    "วิธีการแก้ไข":              document.getElementById('fj-fix').value.trim(),
+    "อะไหล่ที่ใช้":              document.getElementById('fj-parts').value.trim(),
+    "ค่าใช้จ่าย":                document.getElementById('fj-cost').value,
+    "หมายเหตุ":                  document.getElementById('fj-note').value.trim(),
+  };
+
+  const btn = document.getElementById('fj-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> กำลังบันทึก...';
+
+  try {
+    const res = await run('apiPost', JSON.stringify({ action: id ? 'updateJob' : 'addJob', id, data, oldStatus }));
+    if (!res.success) throw new Error(res.message || 'เกิดข้อผิดพลาด');
+
+    await reloadJobs('บันทึกแล้ว · ' + G_JOBS.length + ' รายการ');
+
+    const newId = id || res.id;
+    Swal.fire({
+      icon: 'success', title: 'บันทึกสำเร็จ!',
+      text: id ? 'อัปเดตข้อมูลแล้ว' : `รหัส ${res.id} ถูกสร้างแล้ว`,
+      showCancelButton: true,
+      confirmButtonText: '<i class="ti ti-printer"></i> พิมพ์ใบแจ้งซ่อม',
+      cancelButtonText: 'ปิด',
+      confirmButtonColor: '#1D6EDB',
+      cancelButtonColor: '#6B7280',
+    }).then(r => {
+      if (r.isConfirmed) printJob(newId);
+      closeM('m-job');
+    });
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-device-floppy"></i>บันทึก';
+  }
+}
+
+async function deleteJob() {
+  const id = document.getElementById('fj-id').value;
+  if (!id) return;
+  const r = await Swal.fire({
+    icon:'warning', title:'ยืนยันการลบ',
+    text:`ต้องการลบรายการ ${id} ใช่หรือไม่?`,
+    showCancelButton:true, confirmButtonText:'ลบ', confirmButtonColor:'#C62828', cancelButtonText:'ยกเลิก'
+  });
+  if (!r.isConfirmed) return;
+  try {
+    const res = await run('apiPost', JSON.stringify({action:'deleteJob', id}));
+    if (!res.success) throw new Error(res.message);
+    closeM('m-job');
+    await reloadJobs();
+    toast('🗑️ ลบรายการแล้ว');
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  }
+}
+
+// ============================================================
+//  TECH FORM
+// ============================================================
+function openTechForm(id = null) {
+  const t = id ? G_TECHS.find(x => x["รหัสช่าง"] === id) : null;
+  document.getElementById('t-title').textContent = t ? `แก้ไขข้อมูลช่าง` : 'เพิ่มช่างใหม่';
+  document.getElementById('ft-id').value = id || '';
+  document.getElementById('ft-st-box').style.display = t ? 'block' : 'none';
+  document.getElementById('ft-del-btn').style.display = t ? 'inline-flex' : 'none';
+  if (!t) { document.getElementById('f-tech').reset(); }
+  else {
+    document.getElementById('ft-nm').value = t["ชื่อช่าง"]||'';
+    document.getElementById('ft-ph').value = t["เบอร์โทร"]||'';
+    document.getElementById('ft-sk').value = t["ความเชี่ยวชาญ"]||'';
+    document.getElementById('ft-st').value = t["สถานะ"]||'ใช้งาน';
+  }
+  openM('m-tech');
+}
+
+async function saveTech(e) {
+  e.preventDefault();
+  const id = document.getElementById('ft-id').value;
+  const data = {
+    "ชื่อช่าง":      document.getElementById('ft-nm').value.trim(),
+    "เบอร์โทร":       document.getElementById('ft-ph').value.trim(),
+    "ความเชี่ยวชาญ": document.getElementById('ft-sk').value.trim(),
+    "สถานะ":          id ? document.getElementById('ft-st').value : 'ใช้งาน',
+  };
+  const btn = document.getElementById('ft-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
+  try {
+    const res = await run('apiPost', JSON.stringify({action: id ? 'updateTech' : 'addTech', id, data}));
+    if (!res.success) throw new Error(res.message);
+    closeM('m-tech');
+    await reloadTechs();
+    toast('✅ ' + res.message);
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i>บันทึก';
+  }
+}
+
+async function deleteTechConfirm() {
+  const id = document.getElementById('ft-id').value;
+  if (!id) return;
+  const r = await Swal.fire({
+    icon:'warning', title:'ยืนยันการลบช่าง',
+    text:'ต้องการลบข้อมูลช่างคนนี้ใช่หรือไม่?',
+    showCancelButton:true, confirmButtonText:'ลบ', confirmButtonColor:'#C62828', cancelButtonText:'ยกเลิก'
+  });
+  if (!r.isConfirmed) return;
+  try {
+    const res = await run('apiPost', JSON.stringify({action:'deleteTech', id}));
+    if (!res.success) throw new Error(res.message);
+    closeM('m-tech');
+    await reloadTechs();
+    toast('🗑️ ลบข้อมูลช่างแล้ว');
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  }
+}
+
+// ============================================================
+//  SETTINGS
+// ============================================================
+function populateSettingsForm() {
+  if (!document.getElementById('set-co')) return;
+  document.getElementById('set-co').value = G_SETTINGS["ชื่อบริษัท"] || '';
+  document.getElementById('set-dep').value = G_SETTINGS["แผนก"] || '';
+  document.getElementById('set-tel').value = G_SETTINGS["เบอร์ติดต่อ"] || '';
+  document.getElementById('set-addr').value = G_SETTINGS["ที่อยู่"] || '';
+  const info = document.getElementById('set-info');
+  if (info) {
+    const open = G_JOBS.filter(j=>!['เสร็จสิ้น','ยกเลิก'].includes(j["สถานะ"])).length;
+    info.innerHTML = `
+      <div><i class="ti ti-clipboard-list" style="color:var(--brand)"></i> &nbsp;ใบแจ้งซ่อมทั้งหมด: <b>${G_JOBS.length}</b> รายการ (ค้าง ${open})</div>
+      <div><i class="ti ti-building-factory-2" style="color:var(--brand)"></i> &nbsp;เครื่องจักร/ยานพาหนะ: <b>${G_MACHS.length}</b> รายการ</div>
+      <div><i class="ti ti-users" style="color:var(--brand)"></i> &nbsp;ช่าง: <b>${G_TECHS.length}</b> คน</div>
+    `;
+  }
+}
+
+async function saveSettings(e) {
+  e.preventDefault();
+  const data = {
+    "ชื่อบริษัท": document.getElementById('set-co').value.trim(),
+    "แผนก": document.getElementById('set-dep').value.trim(),
+    "เบอร์ติดต่อ": document.getElementById('set-tel').value.trim(),
+    "ที่อยู่": document.getElementById('set-addr').value.trim(),
+  };
+  const btn = document.getElementById('set-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> บันทึก...';
+  try {
+    const res = await run('apiPost', JSON.stringify({action:'saveSettings', data}));
+    if (!res.success) throw new Error(res.message);
+    G_SETTINGS = await run('apiGetSettings');
+    toast('✅ ' + res.message);
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i>บันทึกการตั้งค่า';
+  }
+}
+
+// ============================================================
+//  PRINT: JOB TICKET
+// ============================================================
+function printJob(id = null) {
+  const jobId = id || document.getElementById('fj-id').value;
+  const j = G_JOBS.find(x => x["รหัสแจ้งซ่อม"] === jobId);
+  if (!j) { toast('⚠️ ไม่พบข้อมูลใบแจ้งซ่อม'); return; }
+
+  const coName = G_SETTINGS["ชื่อบริษัท"] || 'RepairDesk Pro';
+  const coDep  = G_SETTINGS["แผนก"] || 'ระบบแจ้งซ่อมและบำรุงรักษา';
+
+  const urgColors = {
+    'สูง':'background:#FEECEC;color:#C62828;border:1px solid #EF9A9A',
+    'ปานกลาง':'background:#FFF8E1;color:#E65100;border:1px solid #FFD54F',
+    'ต่ำ':'background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7'
+  };
+  const stColors = {
+    'รอดำเนินการ':'background:#FFF8E1;color:#E65100;border:1px solid #FFD54F',
+    'กำลังซ่อม':  'background:#E3F2FD;color:#1565C0;border:1px solid #90CAF9',
+    'เสร็จสิ้น':  'background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7',
+    'ยกเลิก':     'background:#F3F4F6;color:#6B7280;border:1px solid #D1D5DB'
+  };
+  const urgStyle = urgColors[j["ความเร่งด่วน"]] || urgColors['ปานกลาง'];
+  const stStyle = stColors[j["สถานะ"]] || stColors['รอดำเนินการ'];
+  const isDone = j["สถานะ"] === 'เสร็จสิ้น';
+  const techName = j["ช่างผู้รับผิดชอบ"] || '';
+
+  const partsCostText = (j["อะไหล่ที่ใช้"] || j["ค่าใช้จ่าย"])
+    ? [j["อะไหล่ที่ใช้"] ? escHtml(j["อะไหล่ที่ใช้"]) : '', j["ค่าใช้จ่าย"] ? (parseFloat(j["ค่าใช้จ่าย"]).toLocaleString('th-TH')+' บาท') : ''].filter(Boolean).join(' · ')
+    : '<span class="pt-area-empty">.......................................................</span>';
+
+  const html = `
+<div class="pt-wrap">
+
+  <!-- HEADER -->
+  <div class="pt-head">
+    <div class="pt-head-left">
+      <div class="pt-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <div>
+        <div class="pt-title">ใบแจ้งซ่อม (Repair Ticket)</div>
+        <div class="pt-sub">${escHtml(coName)} · ${escHtml(coDep)}</div>
+      </div>
+    </div>
+    <div class="pt-repbox">
+      <span class="pt-rep-lbl">Repair No.</span>
+      <div class="pt-rep-val">${escHtml(j["รหัสแจ้งซ่อม"])}</div>
+      <div class="pt-rep-date">วันที่แจ้ง: <b>${escHtml(j["วันที่แจ้ง"]||'-')}</b></div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="pt-body">
+
+    <!-- LEFT: ข้อมูลผู้แจ้งและปัญหา -->
+    <div class="pt-col pt-col-left">
+      <div class="pt-col-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        ข้อมูลผู้แจ้งและปัญหา
+      </div>
+      <div class="pt-row"><div class="pt-lbl">ผู้แจ้งซ่อม</div><div class="pt-val">${escHtml(j["ชื่อผู้แจ้ง"]||'-')}</div></div>
+      <div class="pt-row"><div class="pt-lbl">เบอร์ติดต่อ</div><div class="pt-val">${escHtml(j["เบอร์โทร"]||'-')}</div></div>
+      <div class="pt-row"><div class="pt-lbl">หมวดหมู่</div><div class="pt-val">${escHtml(j["หมวดหมู่"]||'-')}</div></div>
+      <div class="pt-row"><div class="pt-lbl">เครื่องจักร/รถ</div><div class="pt-val link">${escHtml(j["ชื่อเครื่องจักร/ทะเบียนรถ"]||'-')}</div></div>
+      <div class="pt-row"><div class="pt-lbl">สถานที่</div><div class="pt-val">${escHtml(j["สถานที่"]||'-')}</div></div>
+      <div class="pt-row"><div class="pt-lbl">อาการ/ปัญหา</div><div class="pt-val">${escHtml(j["รายละเอียดปัญหา"]||'-')}</div></div>
+      <div class="pt-row"><div class="pt-lbl">ความเร่งด่วน</div><div class="pt-val"><span class="pt-badge" style="${urgStyle}">${escHtml(j["ความเร่งด่วน"]||'-')}</span></div></div>
+      <div class="pt-row"><div class="pt-lbl">สถานะ</div><div class="pt-val"><span class="pt-badge" style="${stStyle}">${escHtml(j["สถานะ"]||'-')}</span></div></div>
+      <div class="pt-row"><div class="pt-lbl">ช่างผู้รับผิดชอบ</div><div class="pt-val">${techName ? escHtml(techName) : '-'}</div></div>
+      <div class="pt-row"><div class="pt-lbl">วันที่คาดว่าจะเสร็จ</div><div class="pt-val">${escHtml(j["วันที่คาดว่าจะเสร็จ"]||'-')}</div></div>
+    </div>
+
+    <!-- RIGHT: บันทึกปฏิบัติงานช่าง -->
+    <div class="pt-col pt-col-right">
+      <div class="pt-col-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        บันทึกปฏิบัติงานช่าง (สำหรับช่างเทคนิค)
+      </div>
+
+      <div class="pt-timegrid">
+        <div class="pt-timebox">
+          <div class="pt-tk">⏱ เริ่มปฏิบัติงาน</div>
+          <div class="pt-tv">___/___/____</div>
+        </div>
+        <div class="pt-timebox${isDone?' done':''}">
+          <div class="pt-tk">${isDone?'✅':'⬜'} งานเสร็จสิ้น</div>
+          <div class="pt-tv">${isDone ? escHtml(j["วันที่คาดว่าจะเสร็จ"]||'___/___/____') : '___/___/____'}</div>
+        </div>
+      </div>
+
+      <div class="pt-area-lbl">✏️ อาการที่ตรวจพบ / สาเหตุ / วิธีแก้ไข</div>
+      <div class="pt-area big">${j["วิธีการแก้ไข"] ? escHtml(j["วิธีการแก้ไข"]) : '<span class="pt-area-empty">.......................................................</span>'}</div>
+
+      <div class="pt-area-lbl">🪙 อะไหล่ที่เบิกใช้ / ค่าใช้จ่ายเพิ่มเติม</div>
+      <div class="pt-area small">${partsCostText}</div>
+    </div>
+
+  </div>
+
+  <!-- SIGNATURES -->
+  <div class="pt-sign">
+    <div class="pt-sig">
+      <div class="pt-sig-line"></div>
+      <div class="pt-sig-name">${techName ? '( ' + escHtml(techName) + ' )' : '( ................................ )'}</div>
+      <div class="pt-sig-role">ช่างผู้ดำเนินการซ่อม</div>
+    </div>
+    <div class="pt-sig">
+      <div class="pt-sig-line"></div>
+      <div class="pt-sig-name">( ................................ )</div>
+      <div class="pt-sig-role">ผู้ตรวจรับงาน / หัวหน้างาน</div>
+    </div>
+  </div>
+</div>
+
+<div class="pt-actions">
+  <button class="btn btn-primary" onclick="window.print()">
+    <i class="ti ti-printer"></i> พิมพ์ใบแจ้งซ่อม
+  </button>
+  <button class="btn" onclick="closePrintTicket()">ปิดหน้าต่าง</button>
+</div>`;
+
+  document.getElementById('print-ticket').innerHTML = html;
+  document.body.classList.add('print-mode-ticket');
+  window.scrollTo(0,0);
+}
+
+function closePrintTicket() {
+  document.body.classList.remove('print-mode-ticket');
+  document.getElementById('print-ticket').innerHTML = '';
+}
+window.addEventListener('afterprint', closePrintTicket);
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape' && document.body.classList.contains('print-mode-ticket')) closePrintTicket();
+});
+
+// ============================================================
+//  PRINT: SUMMARY REPORT
+// ============================================================
+function printReport() {
+  const m = parseInt(document.getElementById('rep-m').value);
+  const y = parseInt(document.getElementById('rep-y').value);
+  const mach = document.getElementById('rep-mach').value;
+  const techF = document.getElementById('rep-tech').value;
+  const monthName = MONTHS_TH[m-1];
+  const yearTh = y + 543;
+
+  const coName = G_SETTINGS["ชื่อบริษัท"] || 'RepairDesk Pro';
+  const coDep  = G_SETTINGS["แผนก"] || '';
+
+  const filtered = G_JOBS.filter(j => {
+    const d = parseDate(j["วันที่แจ้ง"]);
+    const ok = d && d.getMonth()+1 === m && d.getFullYear() === y;
+    const okM = !mach || j["ชื่อเครื่องจักร/ทะเบียนรถ"] === mach;
+    const okT = !techF || j["ช่างผู้รับผิดชอบ"] === techF;
+    return ok && okM && okT;
+  });
+
+  const done = filtered.filter(j => j["สถานะ"] === 'เสร็จสิ้น').length;
+  const rate = filtered.length ? Math.round(done/filtered.length*100) : 0;
+  const totalCost = filtered.reduce((s,j) => s + (parseFloat(j["ค่าใช้จ่าย"])||0), 0);
+
+  const stBg = {'รอดำเนินการ':'#FFF8E1','กำลังซ่อม':'#E3F2FD','เสร็จสิ้น':'#E8F5E9','ยกเลิก':'#F3F4F6'};
+  const stColor = {'รอดำเนินการ':'#E65100','กำลังซ่อม':'#1565C0','เสร็จสิ้น':'#2E7D32','ยกเลิก':'#6B7280'};
+
+  const rows = filtered.map(j => `
+    <tr>
+      <td style="text-align:center;font-weight:700;color:#1D6EDB">${escHtml(j["รหัสแจ้งซ่อม"])}</td>
+      <td style="text-align:center">${escHtml(j["วันที่แจ้ง"]||'-')}</td>
+      <td>${escHtml(j["ชื่อเครื่องจักร/ทะเบียนรถ"]||'-')}</td>
+      <td>${escHtml(j["ชื่อผู้แจ้ง"]||'-')}</td>
+      <td>${escHtml(j["รายละเอียดปัญหา"]||'-')}</td>
+      <td style="text-align:center">${escHtml(j["ช่างผู้รับผิดชอบ"]||'-')}</td>
+      <td style="text-align:center"><span style="padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:${stBg[j["สถานะ"]]||'#F3F4F6'};color:${stColor[j["สถานะ"]]||'#6B7280'}">${escHtml(j["สถานะ"]||'-')}</span></td>
+      <td style="text-align:right">${j["ค่าใช้จ่าย"] ? parseFloat(j["ค่าใช้จ่าย"]).toLocaleString('th-TH')+'฿' : '-'}</td>
+    </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;color:#94A3B8;padding:20px">ไม่มีข้อมูลงานซ่อมในงวดนี้</td></tr>`;
+
+  const printWindow = window.open('','_blank','width=1100,height=750');
+  printWindow.document.write(`<!DOCTYPE html>
+<html lang="th"><head>
+<meta charset="UTF-8"><title>รายงานซ่อมบำรุง ${escHtml(monthName)} ${yearTh}</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@page{size:A4 landscape;margin:12mm 14mm}
+*{box-sizing:border-box}
+body{font-family:'Prompt',sans-serif;font-size:11px;color:#1E293B;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1D6EDB;padding-bottom:10px;margin-bottom:18px}
+.hdr-title{font-size:19px;font-weight:700;color:#1D6EDB;line-height:1.1}
+.hdr-sub{font-size:11px;color:#64748B;margin-top:3px}
+.hdr-right{text-align:right;font-size:11px;color:#64748B}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.stat{border:1px solid #E2E8F0;border-radius:8px;padding:11px 14px;text-align:center;background:#F8FAFC}
+.stat-lbl{font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.stat-val{font-size:22px;font-weight:800;color:#0F172A}
+table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:10.5px}
+thead tr{background:#1D6EDB;color:#fff}
+th{padding:8px 10px;text-align:left;font-weight:600;font-size:10px;letter-spacing:.3px}
+td{border-bottom:1px solid #E2E8F0;padding:7px 10px}
+tr:nth-child(even) td{background:#F8FAFC}
+tr:hover td{background:#EBF2FD}
+.footer{display:flex;justify-content:space-between;font-size:10px;color:#94A3B8;border-top:1px solid #E2E8F0;padding-top:8px;margin-top:10px}
+.no-print{text-align:center;margin:20px;display:flex;justify-content:center;gap:12px}
+.btn-p{padding:10px 22px;font-family:'Prompt',sans-serif;font-size:13px;background:#1D6EDB;color:#fff;border:none;border-radius:7px;cursor:pointer;font-weight:600}
+.btn-c{padding:10px 22px;font-family:'Prompt',sans-serif;font-size:13px;background:#fff;color:#475569;border:1.5px solid #CBD5E1;border-radius:7px;cursor:pointer}
+@media print{.no-print{display:none}}
+</style></head><body>
+<div class="hdr">
+  <div>
+    <div class="hdr-title">${escHtml(coName)}</div>
+    <div class="hdr-sub">รายงานสรุปงานซ่อมบำรุงประจำเดือน ${escHtml(monthName)} ${yearTh}${coDep?' · '+escHtml(coDep):''}</div>
+    <div class="hdr-sub">เครื่องจักร: <b>${escHtml(mach||'ทั้งหมด')}</b> | ช่าง: <b>${escHtml(techF||'ทั้งหมด')}</b></div>
+  </div>
+  <div class="hdr-right">
+    <div style="font-size:12px;font-weight:700">พิมพ์เมื่อ</div>
+    <div>${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})} ${new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})} น.</div>
+  </div>
+</div>
+<div class="stats">
+  <div class="stat"><div class="stat-lbl">งานทั้งหมด</div><div class="stat-val" style="color:#1D6EDB">${filtered.length}</div></div>
+  <div class="stat"><div class="stat-lbl">เสร็จสิ้น</div><div class="stat-val" style="color:#2E7D32">${done}</div></div>
+  <div class="stat"><div class="stat-lbl">ค้างอยู่</div><div class="stat-val" style="color:#E65100">${filtered.length - done}</div></div>
+  <div class="stat"><div class="stat-lbl">อัตราสำเร็จ</div><div class="stat-val" style="color:#1353A8">${rate}%</div></div>
+  <div class="stat"><div class="stat-lbl">ค่าใช้จ่ายรวม</div><div class="stat-val" style="color:#0F766E;font-size:17px">${totalCost.toLocaleString('th-TH',{maximumFractionDigits:0})} ฿</div></div>
+</div>
+<table>
+  <thead><tr>
+    <th>รหัส</th><th>วันที่แจ้ง</th><th>เครื่องจักร / ทะเบียน</th><th>ผู้แจ้ง</th><th>รายละเอียดปัญหา</th><th>ช่าง</th><th style="text-align:center">สถานะ</th><th style="text-align:right">ค่าใช้จ่าย</th>
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<div class="footer">
+  <span>RepairDesk Pro — รายงานซ่อมบำรุง ${escHtml(monthName)} ${yearTh}</span>
+  <span>ข้อมูล ณ วันที่พิมพ์</span>
+</div>
+<div class="no-print">
+  <button class="btn-p" onclick="window.print()">พิมพ์รายงาน</button>
+  <button class="btn-c" onclick="window.close()">ปิดหน้าต่าง</button>
+</div>
+</body></html>`);
+  printWindow.document.close();
+}
+
+// ============================================================
+//  EXPORT CSV
+// ============================================================
+function exportCSV() {
+  const headers = ["รหัสแจ้งซ่อม","วันที่แจ้ง","ชื่อผู้แจ้ง","เบอร์โทร","หมวดหมู่","ชื่อเครื่องจักร/ทะเบียนรถ","รายละเอียดปัญหา","สถานที่","ความเร่งด่วน","สถานะ","ช่างผู้รับผิดชอบ","วันที่คาดว่าจะเสร็จ","วิธีการแก้ไข","อะไหล่ที่ใช้","ค่าใช้จ่าย","หมายเหตุ"];
+  const rows = [headers, ...G_JOBS.map(j => headers.map(h => `"${(j[h]||'').toString().replace(/"/g,'""')}"`))];
+  const csv = '\uFEFF' + rows.map(r => r.join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = `RepairDesk_${todayStr()}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('📥 ดาวน์โหลด CSV แล้ว');
+}
+
+function exportReportCSV() {
+  const m = parseInt(document.getElementById('rep-m').value);
+  const y = parseInt(document.getElementById('rep-y').value);
+  const filtered = G_JOBS.filter(j => {
+    const d = parseDate(j["วันที่แจ้ง"]);
+    return d && d.getMonth()+1 === m && d.getFullYear() === y;
+  });
+  const headers = ["รหัสแจ้งซ่อม","วันที่แจ้ง","ชื่อผู้แจ้ง","ชื่อเครื่องจักร/ทะเบียนรถ","รายละเอียดปัญหา","ความเร่งด่วน","สถานะ","ช่างผู้รับผิดชอบ","วิธีการแก้ไข","อะไหล่ที่ใช้","ค่าใช้จ่าย"];
+  const rows = [headers, ...filtered.map(j => headers.map(h => `"${(j[h]||'').toString().replace(/"/g,'""')}"`))];
+  const csv = '\uFEFF' + rows.map(r => r.join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = `RepairDesk_Report_${MONTHS_TH[m-1]}_${y+543}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('📥 ดาวน์โหลด CSV รายงานแล้ว');
+}
+
+// ============================================================
+//  CHARTS
+// ============================================================
+function initChart(id, type, data, opts={}) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const baseOpts = {
+    responsive: true, maintainAspectRatio: false,
+    animation: { duration: 500, easing: 'easeInOutQuart' },
+    plugins: { legend: { labels: { font: { family: 'Prompt', size: 12 } } } },
+    ...opts
+  };
+  if (G_CHARTS[id]) {
+    const ch = G_CHARTS[id];
+    ch.data = data;
+    ch.options = baseOpts;
+    ch.update();
+    return;
+  }
+  G_CHARTS[id] = new Chart(canvas.getContext('2d'), { type, data, options: baseOpts });
+}
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function statusBadge(s) { return {'รอดำเนินการ':'bw','กำลังซ่อม':'bp','เสร็จสิ้น':'bd','ยกเลิก':'bc'}[s] || 'bc'; }
+function urgBadge(u) { return {'สูง':'bh','ปานกลาง':'bw','ต่ำ':'bd'}[u] || 'bc'; }
+function escHtml(str) {
+  return (str==null?'':String(str)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(str) {
+  // for single-quoted onclick attributes
+  return (str==null?'':String(str)).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/</g,'\\u003c').replace(/>/g,'\\u003e');
+}
+function getCssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#1D6EDB';
+}
+function hexToRgba(hex, a) {
+  const h = hex.replace('#','');
+  const full = h.length===3 ? h.split('').map(c=>c+c).join('') : h;
+  const r = parseInt(full.substr(0,2),16), g = parseInt(full.substr(2,2),16), b = parseInt(full.substr(4,2),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+// ============================================================
+//  KEYBOARD SHORTCUTS
+// ============================================================
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    const open = document.querySelectorAll('.mbg.on');
+    if (open.length) { open.forEach(m => m.classList.remove('on')); return; }
+    closeSidebar();
+    return;
+  }
+  const tag = (e.target.tagName||'').toLowerCase();
+  const inField = ['input','textarea','select'].includes(tag) || e.target.isContentEditable;
+  if (inField) return;
+  if ((e.key === '/' || e.code === 'Slash') && document.getElementById('p-jobs').classList.contains('on')) {
+    const sq = document.getElementById('sq');
+    if (sq) { e.preventDefault(); sq.focus(); }
+  }
+  if ((e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault(); openJobForm();
+  }
+});
+
+// ============================================================
+//  STARTUP
+// ============================================================
+(function onStartup(){
+  try {
+    const saved = localStorage.getItem('rd_theme');
+    if (saved) applyTheme(saved);
+  } catch(e){}
+})();
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
