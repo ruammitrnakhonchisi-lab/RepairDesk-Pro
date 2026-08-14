@@ -156,7 +156,9 @@ async function importMachines() {
   const rows = readCsvIfExists('machines.csv');
   if (!rows.length) return { count: 0 };
   const payload = rows.map(r => ({
-    name: toNullableStr(r['ชื่อเครื่องจักร/ทะเบียนรถ'] ?? r['ชื่อ'] ?? Object.values(r)[0]),
+    // some exports have a stray duplicate/blank "name" header column, so prefer
+    // whichever column actually has a value, falling back to the first column
+    name: toNullableStr(r['ชื่อเครื่องจักร/ทะเบียนรถ'] || r['ชื่อเครื่องจักร / ทะเบียนรถ'] || r['ชื่อ'] || Object.values(r)[0]),
     category: toNullableStr(r['หมวดหมู่']),
     location: toNullableStr(r['สถานที่ตั้ง']),
     note: toNullableStr(r['หมายเหตุ']),
@@ -170,14 +172,29 @@ async function importTechs() {
   if (!rows.length) return { count: 0 };
   const existing = await sb('techs', { query: '?select=name' });
   const existingNames = new Set(existing.map(t => t.name));
-  const payload = rows.map(r => ({
+  const parsed = rows.map(r => ({
     name: toNullableStr(r['ชื่อช่าง']),
     phone: toNullableStr(r['เบอร์โทร']),
     skill: toNullableStr(r['ความเชี่ยวชาญ']),
     status: toNullableStr(r['สถานะ']) || 'ใช้งาน',
-  })).filter(t => t.name && !existingNames.has(t.name));
-  const count = await insertBatches('techs', payload);
-  return { count, skipped: rows.length - count };
+  })).filter(t => t.name);
+
+  const toInsert = parsed.filter(t => !existingNames.has(t.name));
+  const toUpdate = parsed.filter(t => existingNames.has(t.name));
+
+  const inserted = await insertBatches('techs', toInsert);
+  for (const t of toUpdate) {
+    // enrich a tech that already exists (e.g. was auto-created from a job's
+    // "ช่างผู้รับผิดชอบ" text) with phone/skill/status from this sheet
+    const { name, ...patch } = t;
+    await sb('techs', {
+      method: 'PATCH',
+      query: `?name=eq.${encodeURIComponent(name)}`,
+      body: patch,
+      prefer: 'return=minimal',
+    });
+  }
+  return { inserted, updated: toUpdate.length };
 }
 
 const jobsResult = await importJobs();
