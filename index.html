@@ -556,39 +556,41 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
   .pt-icon{width:9.5mm;height:9.5mm;border-radius:2.2mm;box-shadow:none}
   .pt-icon svg{width:5.2mm;height:5.2mm}
   .pt-title{font-size:15px;line-height:1.2}
-  .pt-sub{font-size:9.5px;margin-top:0.5mm}
+  .pt-sub{font-size:9.5px;line-height:1.25;margin-top:0.5mm}
   .pt-repbox{padding:2.5mm 5mm;min-width:auto;border-radius:2mm}
-  .pt-rep-lbl{font-size:8.5px}
-  .pt-rep-val{font-size:17px}
-  .pt-rep-date{font-size:9.5px;margin-top:0.5mm}
+  .pt-rep-lbl{font-size:8.5px;line-height:1.2}
+  .pt-rep-val{font-size:17px;line-height:1.25}
+  .pt-rep-date{font-size:9.5px;line-height:1.25;margin-top:0.5mm}
 
   .pt-col{padding:4mm 6mm}
   .pt-col-title{font-size:11px;margin-bottom:2.5mm;gap:2mm}
   .pt-col-title svg{width:3.6mm;height:3.6mm}
 
   /* left column: compact 2-up grid of short fields instead of one long stack,
-     so there's headroom to print everything bigger and still fit half a page */
+     so there's headroom to print everything bigger and still fit half a page.
+     tight line-heights on these short labels reclaim the leading that default
+     1.5 line-height would otherwise waste on single-line text. */
   .pt-grid{gap:0 5mm}
-  .pt-cell{padding:1.5mm 0;font-size:10.5px}
+  .pt-cell{padding:1.5mm 0;font-size:10.5px;line-height:1.25}
   .pt-cell .pt-lbl{min-width:19mm}
-  .pt-problem{padding:2.5mm 0 0;font-size:10.5px}
+  .pt-problem{padding:2.5mm 0 0;font-size:10.5px;line-height:1.35}
   .pt-problem .pt-lbl{min-width:19mm}
-  .pt-badge{font-size:9px;padding:0.7mm 2.5mm;border-radius:1mm}
+  .pt-badge{font-size:9px;line-height:1.25;padding:0.7mm 2.5mm;border-radius:1mm}
 
   .pt-timegrid{gap:2.5mm;margin-bottom:2.5mm}
   .pt-timebox{padding:2mm 2.5mm;border-radius:1.5mm}
-  .pt-tk{font-size:8.5px;margin-bottom:1.3mm;gap:1mm}
-  .pt-tv{font-size:10px}
+  .pt-tk{font-size:8.5px;line-height:1.2;margin-bottom:1.3mm;gap:1mm}
+  .pt-tv{font-size:10px;line-height:1.2}
 
-  .pt-area-lbl{font-size:9px;margin-bottom:1.5mm;gap:1mm}
-  .pt-area{padding:2.5mm 3mm;font-size:10px;line-height:1.6;min-height:13mm;margin-bottom:2.5mm;border-radius:1.5mm}
+  .pt-area-lbl{font-size:9px;line-height:1.2;margin-bottom:1.5mm;gap:1mm}
+  .pt-area{padding:2.5mm 3mm;font-size:10px;line-height:1.5;min-height:13mm;margin-bottom:2.5mm;border-radius:1.5mm}
   .pt-area.small{min-height:9mm}
   .pt-area.big{min-height:36mm}
 
   .pt-sign{padding:3.5mm 6mm 4.5mm}
   .pt-sig-line{height:9mm}
-  .pt-sig-name{font-size:10px;margin-top:1.8mm}
-  .pt-sig-role{font-size:9px;margin-top:0.5mm}
+  .pt-sig-name{font-size:10px;line-height:1.25;margin-top:1.8mm}
+  .pt-sig-role{font-size:9px;line-height:1.25;margin-top:0.5mm}
 }
 </style>
 </head>
