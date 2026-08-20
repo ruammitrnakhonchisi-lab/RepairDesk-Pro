@@ -502,9 +502,13 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
 .pt-col-title{font-size:12.5px;font-weight:700;color:#0F172A;display:flex;align-items:center;gap:7px;margin-bottom:14px}
 .pt-col-title svg{width:15px;height:15px;stroke:#1D6EDB;flex-shrink:0}
 
-.pt-row{display:flex;align-items:flex-start;gap:6px;padding:6px 0;border-bottom:1px dashed #EEF1F5;font-size:12px}
-.pt-row:last-child{border-bottom:none}
-.pt-lbl{color:#94A3B8;min-width:96px;flex-shrink:0}
+.pt-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.pt-cell{display:flex;align-items:baseline;gap:6px;padding:6px 0;border-bottom:1px dashed #EEF1F5;font-size:12px}
+.pt-cell .pt-lbl{min-width:78px;flex-shrink:0}
+.pt-problem{display:flex;gap:6px;padding:10px 0 0;font-size:12px}
+.pt-problem .pt-lbl{min-width:78px;flex-shrink:0;padding-top:1px}
+.pt-problem .pt-val{line-height:1.55}
+.pt-lbl{color:#94A3B8}
 .pt-val{color:#0F172A;font-weight:600;word-break:break-word}
 .pt-val.link{color:#1D6EDB}
 .pt-badge{display:inline-block;padding:2px 10px;border-radius:6px;font-size:11px;font-weight:700}
@@ -534,6 +538,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
 @media(max-width:640px){
   .pt-body{grid-template-columns:1fr}
   .pt-col-left{border-right:none;border-bottom:1px solid #E2E8F0}
+  .pt-grid{grid-template-columns:1fr}
   .pt-timegrid{grid-template-columns:1fr}
 }
 @media print{
@@ -547,38 +552,43 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
     max-width:190mm;width:190mm;margin:0;
   }
 
-  .pt-head{padding:4mm 5mm 3mm;gap:3mm}
-  .pt-icon{width:8mm;height:8mm;border-radius:2mm;box-shadow:none}
-  .pt-icon svg{width:4.5mm;height:4.5mm}
-  .pt-title{font-size:12px;line-height:1.2}
-  .pt-sub{font-size:8px;margin-top:0.5mm}
-  .pt-repbox{padding:2mm 4mm;min-width:auto;border-radius:2mm}
-  .pt-rep-lbl{font-size:7px}
-  .pt-rep-val{font-size:13px}
-  .pt-rep-date{font-size:8px;margin-top:0.5mm}
+  .pt-head{padding:4.5mm 6mm 3.5mm;gap:3.5mm}
+  .pt-icon{width:9.5mm;height:9.5mm;border-radius:2.2mm;box-shadow:none}
+  .pt-icon svg{width:5.2mm;height:5.2mm}
+  .pt-title{font-size:15px;line-height:1.2}
+  .pt-sub{font-size:9.5px;margin-top:0.5mm}
+  .pt-repbox{padding:2.5mm 5mm;min-width:auto;border-radius:2mm}
+  .pt-rep-lbl{font-size:8.5px}
+  .pt-rep-val{font-size:17px}
+  .pt-rep-date{font-size:9.5px;margin-top:0.5mm}
 
-  .pt-col{padding:3mm 5mm}
-  .pt-col-title{font-size:9px;margin-bottom:2mm;gap:1.5mm}
-  .pt-col-title svg{width:3mm;height:3mm}
+  .pt-col{padding:4mm 6mm}
+  .pt-col-title{font-size:11px;margin-bottom:2.5mm;gap:2mm}
+  .pt-col-title svg{width:3.6mm;height:3.6mm}
 
-  .pt-row{padding:1mm 0;font-size:8px;gap:2mm}
-  .pt-lbl{min-width:22mm}
-  .pt-badge{font-size:7.5px;padding:0.5mm 2mm;border-radius:1mm}
+  /* left column: compact 2-up grid of short fields instead of one long stack,
+     so there's headroom to print everything bigger and still fit half a page */
+  .pt-grid{gap:0 5mm}
+  .pt-cell{padding:1.5mm 0;font-size:10.5px}
+  .pt-cell .pt-lbl{min-width:19mm}
+  .pt-problem{padding:2.5mm 0 0;font-size:10.5px}
+  .pt-problem .pt-lbl{min-width:19mm}
+  .pt-badge{font-size:9px;padding:0.7mm 2.5mm;border-radius:1mm}
 
-  .pt-timegrid{gap:2mm;margin-bottom:2mm}
-  .pt-timebox{padding:1.5mm 2mm;border-radius:1.5mm}
-  .pt-tk{font-size:7px;margin-bottom:1mm;gap:1mm}
-  .pt-tv{font-size:8px}
+  .pt-timegrid{gap:2.5mm;margin-bottom:2.5mm}
+  .pt-timebox{padding:2mm 2.5mm;border-radius:1.5mm}
+  .pt-tk{font-size:8.5px;margin-bottom:1.3mm;gap:1mm}
+  .pt-tv{font-size:10px}
 
-  .pt-area-lbl{font-size:7.5px;margin-bottom:1mm;gap:1mm}
-  .pt-area{padding:2mm 2.5mm;font-size:8px;line-height:1.5;min-height:12mm;margin-bottom:2mm;border-radius:1.5mm}
-  .pt-area.small{min-height:7mm}
-  .pt-area.big{min-height:38mm}
+  .pt-area-lbl{font-size:9px;margin-bottom:1.5mm;gap:1mm}
+  .pt-area{padding:2.5mm 3mm;font-size:10px;line-height:1.6;min-height:13mm;margin-bottom:2.5mm;border-radius:1.5mm}
+  .pt-area.small{min-height:9mm}
+  .pt-area.big{min-height:36mm}
 
-  .pt-sign{padding:3mm 5mm 4mm}
-  .pt-sig-line{height:8mm}
-  .pt-sig-name{font-size:8px;margin-top:1.5mm}
-  .pt-sig-role{font-size:7px;margin-top:0.5mm}
+  .pt-sign{padding:3.5mm 6mm 4.5mm}
+  .pt-sig-line{height:9mm}
+  .pt-sig-name{font-size:10px;margin-top:1.8mm}
+  .pt-sig-role{font-size:9px;margin-top:0.5mm}
 }
 </style>
 </head>
@@ -2165,16 +2175,18 @@ function printJob(id = null) {
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         ข้อมูลผู้แจ้งและปัญหา
       </div>
-      <div class="pt-row"><div class="pt-lbl">ผู้แจ้งซ่อม</div><div class="pt-val">${escHtml(j["ชื่อผู้แจ้ง"]||'-')}</div></div>
-      <div class="pt-row"><div class="pt-lbl">เบอร์ติดต่อ</div><div class="pt-val">${escHtml(j["เบอร์โทร"]||'-')}</div></div>
-      <div class="pt-row"><div class="pt-lbl">หมวดหมู่</div><div class="pt-val">${escHtml(j["หมวดหมู่"]||'-')}</div></div>
-      <div class="pt-row"><div class="pt-lbl">เครื่องจักร/รถ</div><div class="pt-val link">${escHtml(j["ชื่อเครื่องจักร/ทะเบียนรถ"]||'-')}</div></div>
-      <div class="pt-row"><div class="pt-lbl">สถานที่</div><div class="pt-val">${escHtml(j["สถานที่"]||'-')}</div></div>
-      <div class="pt-row"><div class="pt-lbl">อาการ/ปัญหา</div><div class="pt-val">${escHtml(j["รายละเอียดปัญหา"]||'-')}</div></div>
-      <div class="pt-row"><div class="pt-lbl">ความเร่งด่วน</div><div class="pt-val"><span class="pt-badge" style="${urgStyle}">${escHtml(j["ความเร่งด่วน"]||'-')}</span></div></div>
-      <div class="pt-row"><div class="pt-lbl">สถานะ</div><div class="pt-val"><span class="pt-badge" style="${stStyle}">${escHtml(j["สถานะ"]||'-')}</span></div></div>
-      <div class="pt-row"><div class="pt-lbl">ช่างผู้รับผิดชอบ</div><div class="pt-val">${techName ? escHtml(techName) : '-'}</div></div>
-      <div class="pt-row"><div class="pt-lbl">วันที่คาดว่าจะเสร็จ</div><div class="pt-val">${escHtml(j["วันที่คาดว่าจะเสร็จ"]||'-')}</div></div>
+      <div class="pt-grid">
+        <div class="pt-cell"><div class="pt-lbl">ผู้แจ้งซ่อม</div><div class="pt-val">${escHtml(j["ชื่อผู้แจ้ง"]||'-')}</div></div>
+        <div class="pt-cell"><div class="pt-lbl">เบอร์ติดต่อ</div><div class="pt-val">${escHtml(j["เบอร์โทร"]||'-')}</div></div>
+        <div class="pt-cell"><div class="pt-lbl">หมวดหมู่</div><div class="pt-val">${escHtml(j["หมวดหมู่"]||'-')}</div></div>
+        <div class="pt-cell"><div class="pt-lbl">เครื่องจักร/รถ</div><div class="pt-val link">${escHtml(j["ชื่อเครื่องจักร/ทะเบียนรถ"]||'-')}</div></div>
+        <div class="pt-cell"><div class="pt-lbl">สถานที่</div><div class="pt-val">${escHtml(j["สถานที่"]||'-')}</div></div>
+        <div class="pt-cell"><div class="pt-lbl">ความเร่งด่วน</div><div class="pt-val"><span class="pt-badge" style="${urgStyle}">${escHtml(j["ความเร่งด่วน"]||'-')}</span></div></div>
+        <div class="pt-cell"><div class="pt-lbl">สถานะ</div><div class="pt-val"><span class="pt-badge" style="${stStyle}">${escHtml(j["สถานะ"]||'-')}</span></div></div>
+        <div class="pt-cell"><div class="pt-lbl">ช่างผู้รับผิดชอบ</div><div class="pt-val">${techName ? escHtml(techName) : '-'}</div></div>
+        <div class="pt-cell"><div class="pt-lbl">กำหนดเสร็จ</div><div class="pt-val">${escHtml(j["วันที่คาดว่าจะเสร็จ"]||'-')}</div></div>
+      </div>
+      <div class="pt-problem"><div class="pt-lbl">อาการ/ปัญหา</div><div class="pt-val">${escHtml(j["รายละเอียดปัญหา"]||'-')}</div></div>
     </div>
 
     <!-- RIGHT: บันทึกปฏิบัติงานช่าง -->
