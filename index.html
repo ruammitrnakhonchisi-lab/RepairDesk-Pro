@@ -507,7 +507,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
 .pt-cell .pt-lbl{min-width:78px;flex-shrink:0}
 .pt-problem{display:flex;gap:6px;padding:10px 0 0;font-size:12px}
 .pt-problem .pt-lbl{min-width:78px;flex-shrink:0;padding-top:1px}
-.pt-problem .pt-val{line-height:1.55}
+.pt-problem .pt-val{font-size:14px;font-weight:700;line-height:1.55}
 .pt-lbl{color:#94A3B8}
 .pt-val{color:#0F172A;font-weight:600;word-break:break-word}
 .pt-val.link{color:#1D6EDB}
@@ -556,11 +556,12 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
   .pt-icon{width:9.5mm;height:9.5mm;border-radius:2.2mm;box-shadow:none}
   .pt-icon svg{width:5.2mm;height:5.2mm}
   .pt-title{font-size:15px;line-height:1.2}
-  .pt-sub{font-size:9.5px;line-height:1.25;margin-top:0.5mm}
+  .pt-sub{font-size:9.5px;line-height:1.25;margin-top:0.5mm;color:#334155}
   .pt-repbox{padding:2.5mm 5mm;min-width:auto;border-radius:2mm}
-  .pt-rep-lbl{font-size:8.5px;line-height:1.2}
+  .pt-rep-lbl{font-size:8.5px;line-height:1.2;color:#14428C}
   .pt-rep-val{font-size:17px;line-height:1.25}
-  .pt-rep-date{font-size:9.5px;line-height:1.25;margin-top:0.5mm}
+  .pt-rep-date{font-size:9.5px;line-height:1.25;margin-top:0.5mm;color:#334155}
+  .pt-rep-date b{color:#0F172A}
 
   .pt-col{padding:4mm 6mm}
   .pt-col-title{font-size:11px;margin-bottom:2.5mm;gap:2mm}
@@ -573,24 +574,29 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
   .pt-grid{gap:0 5mm}
   .pt-cell{padding:1.5mm 0;font-size:10.5px;line-height:1.25}
   .pt-cell .pt-lbl{min-width:19mm}
+  .pt-lbl{color:#334155;font-weight:600}
+  .pt-val{color:#000}
+  /* the reported problem is the first thing a technician needs to read —
+     print it noticeably bigger and bolder than the other fields */
   .pt-problem{padding:2.5mm 0 0;font-size:10.5px;line-height:1.35}
   .pt-problem .pt-lbl{min-width:19mm}
-  .pt-badge{font-size:9px;line-height:1.25;padding:0.7mm 2.5mm;border-radius:1mm}
+  .pt-problem .pt-val{font-size:13.5px;font-weight:800;color:#000}
+  .pt-badge{font-size:9px;line-height:1.25;padding:0.7mm 2.5mm;border-radius:1mm;font-weight:800}
 
   .pt-timegrid{gap:2.5mm;margin-bottom:2.5mm}
   .pt-timebox{padding:2mm 2.5mm;border-radius:1.5mm}
-  .pt-tk{font-size:8.5px;line-height:1.2;margin-bottom:1.3mm;gap:1mm}
-  .pt-tv{font-size:10px;line-height:1.2}
+  .pt-tk{font-size:8.5px;line-height:1.2;margin-bottom:1.3mm;gap:1mm;color:#334155}
+  .pt-tv{font-size:10px;line-height:1.2;color:#000}
 
-  .pt-area-lbl{font-size:9px;line-height:1.2;margin-bottom:1.5mm;gap:1mm}
-  .pt-area{padding:2.2mm 3mm;font-size:10px;line-height:1.5;min-height:12mm;margin-bottom:2mm;border-radius:1.5mm}
+  .pt-area-lbl{font-size:9px;line-height:1.2;margin-bottom:1.5mm;gap:1mm;color:#334155}
+  .pt-area{padding:2.2mm 3mm;font-size:10px;line-height:1.5;min-height:12mm;margin-bottom:2mm;border-radius:1.5mm;color:#000;border-color:#94A3B8}
   .pt-area.small{min-height:8mm}
   .pt-area.big{min-height:33mm}
 
   .pt-sign{padding:3mm 6mm 4mm}
-  .pt-sig-line{height:9mm}
+  .pt-sig-line{height:9mm;border-color:#000}
   .pt-sig-name{font-size:10px;line-height:1.25;margin-top:1.8mm}
-  .pt-sig-role{font-size:9px;line-height:1.25;margin-top:0.5mm}
+  .pt-sig-role{font-size:9px;line-height:1.25;margin-top:0.5mm;color:#334155}
 }
 </style>
 </head>
