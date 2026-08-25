@@ -188,3 +188,95 @@ create policy "public insert" on job_timeline
 drop policy if exists "public full access" on settings;
 create policy "public full access" on settings
   for all using (true) with check (true);
+
+-- ============================================================
+--  PREVENTIVE MAINTENANCE (PM)
+--  One flexible model instead of the old paper system's many
+--  different form layouts (daily tick-grids, weekly rotation
+--  sheets, detailed monthly checklists): a reusable checklist
+--  template assigned to a machine at a chosen frequency, with a
+--  due date the system advances automatically after each check.
+-- ============================================================
+
+-- ---------- CHECKLIST TEMPLATES ----------
+create table if not exists pm_checklists (
+  id          bigint generated always as identity primary key,
+  name        text not null unique,
+  items       jsonb not null default '[]'::jsonb, -- ["ตรวจสอบ...", "ตรวจสอบ...", ...]
+  created_at  timestamptz not null default now()
+);
+
+-- ---------- PER-MACHINE SCHEDULE ----------
+create table if not exists pm_schedules (
+  id               bigint generated always as identity primary key,
+  machine_name     text not null references machines(name) on delete cascade,
+  checklist_id     bigint not null references pm_checklists(id) on delete restrict,
+  frequency        text not null check (frequency in ('daily','weekly','monthly')),
+  next_due_date    date not null default current_date,
+  last_checked_at  timestamptz,
+  active           boolean not null default true,
+  created_at       timestamptz not null default now()
+);
+
+create index if not exists idx_pm_schedules_machine on pm_schedules(machine_name);
+
+-- ---------- COMPLETED CHECKS ----------
+create table if not exists pm_records (
+  id              bigint generated always as identity primary key,
+  schedule_id     bigint references pm_schedules(id) on delete set null,
+  machine_name    text not null,
+  checklist_name  text not null, -- snapshot, so history reads correctly even if the template is edited later
+  checked_at      timestamptz not null default now(),
+  checked_by      text,
+  results         jsonb not null default '[]'::jsonb, -- [{"item":"...", "status":"ok"|"issue", "note":"..."}, ...]
+  has_issue       boolean not null default false,
+  overall_note    text
+);
+
+create index if not exists idx_pm_records_machine on pm_records(machine_name);
+create index if not exists idx_pm_records_schedule on pm_records(schedule_id);
+
+-- after each check, push the schedule's due date forward by its frequency
+create or replace function advance_pm_schedule()
+returns trigger language plpgsql as $$
+declare
+  freq text;
+  base date;
+begin
+  if new.schedule_id is not null then
+    select frequency into freq from pm_schedules where id = new.schedule_id;
+    base := (new.checked_at at time zone 'Asia/Bangkok')::date;
+    update pm_schedules
+    set next_due_date = case freq
+          when 'daily' then base + 1
+          when 'weekly' then base + 7
+          when 'monthly' then (base + interval '1 month')::date
+          else base + 1
+        end,
+        last_checked_at = new.checked_at
+    where id = new.schedule_id;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_advance_pm_schedule on pm_records;
+create trigger trg_advance_pm_schedule
+after insert on pm_records
+for each row execute function advance_pm_schedule();
+
+alter table pm_checklists enable row level security;
+alter table pm_schedules  enable row level security;
+alter table pm_records    enable row level security;
+
+drop policy if exists "public full access" on pm_checklists;
+create policy "public full access" on pm_checklists
+  for all using (true) with check (true);
+
+drop policy if exists "public full access" on pm_schedules;
+create policy "public full access" on pm_schedules
+  for all using (true) with check (true);
+
+drop policy if exists "public full access" on pm_records;
+create policy "public full access" on pm_records
+  for all using (true) with check (true);

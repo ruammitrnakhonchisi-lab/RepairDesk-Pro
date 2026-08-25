@@ -417,6 +417,23 @@ button:focus-visible,.btn:focus-visible,.nb:focus-visible{outline:2px solid var(
 .tl-body{font-size:12px;color:var(--text2);margin-top:2px}
 .tl-body b{color:var(--text)}
 
+/* PM checklist items (perform-check modal) */
+.pmk-item{padding:10px 0;border-bottom:1px solid var(--border)}
+.pmk-item:last-child{border-bottom:none}
+.pmk-item-txt{font-size:13px;color:var(--text);margin-bottom:8px}
+.pmk-toggle{display:flex;gap:6px}
+.pmk-btn{padding:6px 14px;border-radius:8px;border:1.5px solid var(--border2);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);font-family:'Prompt',sans-serif;transition:var(--transition)}
+.pmk-btn:hover{border-color:var(--brand)}
+.pmk-btn.ok.on{background:var(--c-done-bg);color:var(--c-done);border-color:var(--c-done-b)}
+.pmk-btn.issue.on{background:var(--c-hi-bg);color:var(--c-hi);border-color:var(--c-hi-b)}
+.pmk-note-input{width:100%;margin-top:8px;font-size:12px;padding:7px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-family:'Prompt',sans-serif}
+
+/* PM checklist template list (management card) */
+.pmc-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+.pmc-row:last-child{border-bottom:none}
+.pmc-row-name{font-weight:600;font-size:13px;color:var(--text)}
+.pmc-row-items{font-size:11.5px;color:var(--text3);margin-top:3px}
+
 /* Pagination */
 .pager{display:flex;gap:6px;justify-content:center;align-items:center;margin-top:16px;flex-wrap:wrap}
 .pager button{min-width:34px;height:34px;padding:0 8px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Prompt',sans-serif;transition:var(--transition)}
@@ -630,6 +647,10 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
       <button class="nb" id="nav-mach" onclick="go('mach',this)" aria-label="เครื่องจักร">
         <i class="ti ti-building-factory-2"></i> เครื่องจักร / ยานพาหนะ
       </button>
+      <button class="nb" id="nav-pm" onclick="go('pm',this)" aria-label="PM เครื่องจักร">
+        <i class="ti ti-checklist"></i> PM เครื่องจักร
+        <span class="badge-num red" id="nav-pm-count" style="display:none">0</span>
+      </button>
       <button class="nb" id="nav-rep" onclick="go('rep',this)" aria-label="รายงานสรุป">
         <i class="ti ti-chart-bar"></i> รายงานสรุป
       </button>
@@ -761,6 +782,51 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
               <tbody id="mach-body"></tbody>
             </table>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PM PAGE ===== -->
+    <div id="p-pm" class="page">
+      <div class="page-inner">
+        <div id="pm-met" class="metrics"></div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="ti ti-alert-triangle"></i>รายการที่ต้องตรวจ</div>
+          </div>
+          <div id="pm-due-list"></div>
+        </div>
+
+        <div class="card" style="padding:0">
+          <div class="card-header" style="padding:16px 20px">
+            <div class="card-title"><i class="ti ti-calendar-event"></i>แผนงาน PM ทั้งหมด</div>
+            <button class="btn btn-primary" onclick="openPmSchedForm()"><i class="ti ti-plus"></i> เพิ่มแผนงาน</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table" id="pm-sched-table">
+              <thead><tr>
+                <th>เครื่องจักร</th><th>เช็คลิสต์</th><th>ความถี่</th><th>ครบกำหนด</th><th>ตรวจล่าสุด</th><th style="text-align:right">การจัดการ</th>
+              </tr></thead>
+              <tbody id="pm-sched-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="ti ti-clipboard-list"></i>เช็คลิสต์แม่แบบ</div>
+            <button class="btn" onclick="openPmChecklistForm()"><i class="ti ti-plus"></i> เพิ่มเช็คลิสต์</button>
+          </div>
+          <div id="pm-checklist-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="ti ti-history"></i>ประวัติการตรวจ PM</div>
+            <span id="pm-hist-count" class="badge b-brand">0 รายการ</span>
+          </div>
+          <div id="pm-history-list"></div>
         </div>
       </div>
     </div>
@@ -1028,6 +1094,100 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
   </div>
 </div>
 
+<!-- ============================================================
+     MODAL: PM SCHEDULE FORM
+     ============================================================ -->
+<div id="m-pm-sched" class="mbg" onclick="if(event.target===this)closeM('m-pm-sched')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-calendar-event" style="color:var(--brand)"></i><span id="pms-title">เพิ่มแผนงาน PM</span></div>
+      <button class="modal-close" onclick="closeM('m-pm-sched')" aria-label="ปิด"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="f-pm-sched" onsubmit="savePmSched(event)">
+        <input type="hidden" id="pms-id">
+        <div class="field"><label>เครื่องจักร / ยานพาหนะ *</label>
+          <select id="pms-machine" required><option value="">เลือกเครื่องจักร...</option></select>
+        </div>
+        <div class="field"><label>เช็คลิสต์ที่ใช้ตรวจ *</label>
+          <select id="pms-checklist" required><option value="">เลือกเช็คลิสต์...</option></select>
+        </div>
+        <div class="field"><label>ความถี่ในการตรวจ *</label>
+          <select id="pms-freq" required>
+            <option value="daily">รายวัน</option>
+            <option value="weekly">รายสัปดาห์</option>
+            <option value="monthly">รายเดือน</option>
+          </select>
+        </div>
+        <div class="field"><label>ครบกำหนดตรวจครั้งแรก</label><input type="date" id="pms-due"></div>
+        <div class="field" id="pms-active-box" style="display:none">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="pms-active" style="width:16px;height:16px"> เปิดใช้งานแผนงานนี้
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="closeM('m-pm-sched')">ยกเลิก</button>
+      <button type="button" class="btn btn-danger" id="pms-del-btn" style="display:none" onclick="deletePmSchedConfirm()"><i class="ti ti-trash"></i>ลบ</button>
+      <button type="submit" form="f-pm-sched" class="btn btn-primary" id="pms-btn"><i class="ti ti-device-floppy"></i>บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: PM CHECKLIST TEMPLATE FORM
+     ============================================================ -->
+<div id="m-pm-checklist" class="mbg" onclick="if(event.target===this)closeM('m-pm-checklist')">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-clipboard-list" style="color:var(--brand)"></i><span id="pmc-title">เพิ่มเช็คลิสต์</span></div>
+      <button class="modal-close" onclick="closeM('m-pm-checklist')" aria-label="ปิด"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="f-pm-checklist" onsubmit="savePmChecklist(event)">
+        <input type="hidden" id="pmc-id">
+        <div class="field"><label>ชื่อเช็คลิสต์ *</label><input id="pmc-nm" placeholder="เช่น เครน (ตรวจรายวัน)" required></div>
+        <div class="field"><label>รายการตรวจ * (บรรทัดละ 1 รายการ)</label>
+          <textarea id="pmc-items" rows="8" placeholder="น้ำมันเครื่อง&#10;น้ำในหม้อน้ำ&#10;กรองอากาศ" required style="width:100%;font-family:'Prompt',sans-serif;font-size:13px;padding:10px 12px;border:1px solid var(--border2);border-radius:var(--rad);background:var(--surface);color:var(--text);resize:vertical"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="closeM('m-pm-checklist')">ยกเลิก</button>
+      <button type="button" class="btn btn-danger" id="pmc-del-btn" style="display:none" onclick="deletePmChecklistConfirm()"><i class="ti ti-trash"></i>ลบ</button>
+      <button type="submit" form="f-pm-checklist" class="btn btn-primary" id="pmc-btn"><i class="ti ti-device-floppy"></i>บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: PERFORM PM CHECK
+     ============================================================ -->
+<div id="m-pm-check" class="mbg" onclick="if(event.target===this)closeM('m-pm-check')">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-checklist" style="color:var(--brand)"></i><span id="pmk-title">ตรวจ PM</span></div>
+      <button class="modal-close" onclick="closeM('m-pm-check')" aria-label="ปิด"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="f-pm-check" onsubmit="savePmCheck(event)">
+        <input type="hidden" id="pmk-sched-id">
+        <div class="field"><label>ผู้ตรวจ</label>
+          <select id="pmk-tech"><option value="">— ไม่ระบุ —</option></select>
+        </div>
+        <div class="section-divider"><span>รายการตรวจ</span></div>
+        <div id="pmk-items"></div>
+        <div class="field" style="margin-top:14px"><label>หมายเหตุเพิ่มเติม</label><input id="pmk-note" placeholder="ข้อมูลอื่นๆ ที่ต้องการบันทึก"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="closeM('m-pm-check')">ยกเลิก</button>
+      <button type="submit" form="f-pm-check" class="btn btn-primary" id="pmk-btn"><i class="ti ti-device-floppy"></i>บันทึกผลตรวจ</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 <div class="ver-badge" id="ver-badge">v2.1 · BUILD20260716</div>
 <div id="print-ticket"></div>
@@ -1037,6 +1197,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
 //  GLOBALS
 // ============================================================
 let G_JOBS = [], G_MACHS = [], G_TECHS = [], G_SETTINGS = {}, G_CHARTS = {};
+let G_PM_CHECKLISTS = [], G_PM_SCHEDULES = [], G_PM_RECORDS = [];
 let G_FILTER = '', G_PAGE = 1, G_PAGE_SIZE = 15;
 const MONTHS_TH = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
 
@@ -1189,6 +1350,21 @@ async function apiGetTimeline(jobId) {
   if (error) throw error;
   return data.map(timelineToObj);
 }
+async function apiGetPmChecklists() {
+  const { data, error } = await SB.from('pm_checklists').select('*').order('name', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+async function apiGetPmSchedules() {
+  const { data, error } = await SB.from('pm_schedules').select('*').order('next_due_date', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+async function apiGetPmRecords() {
+  const { data, error } = await SB.from('pm_records').select('*').order('checked_at', { ascending: false }).limit(200);
+  if (error) throw error;
+  return data;
+}
 
 async function addJob(data) {
   const { data: inserted, error } = await SB.from('jobs').insert(jobFromObj(data)).select('id').single();
@@ -1242,6 +1418,54 @@ async function saveSettingsRow(data) {
   return { success: true, message: 'บันทึกการตั้งค่าเรียบร้อย' };
 }
 
+async function addPmChecklist(data) {
+  const { error } = await SB.from('pm_checklists').insert({ name: data.name, items: data.items });
+  if (error) return { success: false, message: error.message };
+  return { success: true, message: 'เพิ่มเช็คลิสต์เรียบร้อย' };
+}
+async function updatePmChecklist(id, data) {
+  const { error } = await SB.from('pm_checklists').update({ name: data.name, items: data.items }).eq('id', id);
+  if (error) return { success: false, message: error.message };
+  return { success: true, message: 'อัปเดตเช็คลิสต์เรียบร้อย' };
+}
+async function deletePmChecklist(id) {
+  const { error } = await SB.from('pm_checklists').delete().eq('id', id);
+  if (error) return { success: false, message: error.message };
+  return { success: true, message: 'ลบเช็คลิสต์เรียบร้อย' };
+}
+async function addPmSched(data) {
+  const { error } = await SB.from('pm_schedules').insert({
+    machine_name: data.machine_name, checklist_id: data.checklist_id,
+    frequency: data.frequency, next_due_date: data.next_due_date || null,
+  });
+  if (error) return { success: false, message: error.message };
+  return { success: true, message: 'เพิ่มแผนงาน PM เรียบร้อย' };
+}
+async function updatePmSched(id, data) {
+  const { error } = await SB.from('pm_schedules').update({
+    machine_name: data.machine_name, checklist_id: data.checklist_id,
+    frequency: data.frequency, next_due_date: data.next_due_date || null,
+    active: data.active,
+  }).eq('id', id);
+  if (error) return { success: false, message: error.message };
+  return { success: true, message: 'อัปเดตแผนงาน PM เรียบร้อย' };
+}
+async function deletePmSched(id) {
+  const { error } = await SB.from('pm_schedules').delete().eq('id', id);
+  if (error) return { success: false, message: error.message };
+  return { success: true, message: 'ลบแผนงาน PM เรียบร้อย' };
+}
+async function addPmRecord(data) {
+  const hasIssue = data.results.some(r => r.status === 'issue');
+  const { error } = await SB.from('pm_records').insert({
+    schedule_id: data.schedule_id, machine_name: data.machine_name,
+    checklist_name: data.checklist_name, checked_by: data.checked_by || null,
+    results: data.results, has_issue: hasIssue, overall_note: data.overall_note || null,
+  });
+  if (error) return { success: false, message: error.message };
+  return { success: true, message: 'บันทึกผลตรวจ PM เรียบร้อย' };
+}
+
 async function apiPost(bodyStr) {
   try {
     const body = JSON.parse(bodyStr);
@@ -1256,6 +1480,13 @@ async function apiPost(bodyStr) {
       case 'updateMachine': return await updateMachine(body.oldName, body.data);
       case 'deleteMachine': return await deleteMachine(body.name);
       case 'saveSettings': return await saveSettingsRow(body.data);
+      case 'addPmChecklist': return await addPmChecklist(body.data);
+      case 'updatePmChecklist': return await updatePmChecklist(body.id, body.data);
+      case 'deletePmChecklist': return await deletePmChecklist(body.id);
+      case 'addPmSched': return await addPmSched(body.data);
+      case 'updatePmSched': return await updatePmSched(body.id, body.data);
+      case 'deletePmSched': return await deletePmSched(body.id);
+      case 'addPmRecord': return await addPmRecord(body.data);
       default: return { success: false, message: 'ไม่รู้จักคำสั่ง: ' + body.action };
     }
   } catch (e) {
@@ -1276,11 +1507,27 @@ async function init() {
       run('apiGetJobs'), run('apiGetMachines'), run('apiGetTechs'), run('apiGetSettings')
     ]);
     G_JOBS = jobs || []; G_MACHS = machs || []; G_TECHS = techs || []; G_SETTINGS = settings || {};
+    await loadPmData();
     afterLoad('ซิงค์แล้ว · ' + G_JOBS.length + ' รายการ');
   } catch(e) {
     console.error(e);
     setConn('err', 'เชื่อมต่อล้มเหลว');
     toast('⚠️ ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่');
+  }
+}
+
+async function loadPmData() {
+  // separate try/catch: the PM tables are an additive migration, so a
+  // database that hasn't run the latest schema.sql yet shouldn't break
+  // the rest of the app (jobs/machines/techs) from loading.
+  try {
+    const [pmChecklists, pmScheds, pmRecords] = await Promise.all([
+      run('apiGetPmChecklists'), run('apiGetPmSchedules'), run('apiGetPmRecords')
+    ]);
+    G_PM_CHECKLISTS = pmChecklists || []; G_PM_SCHEDULES = pmScheds || []; G_PM_RECORDS = pmRecords || [];
+  } catch(e) {
+    console.error('PM data unavailable (run the latest supabase/schema.sql?)', e);
+    G_PM_CHECKLISTS = []; G_PM_SCHEDULES = []; G_PM_RECORDS = [];
   }
 }
 
@@ -1297,6 +1544,10 @@ function afterLoad(connText) {
   const pendEl = document.getElementById('nav-pending-count');
   if (pending > 0) { pendEl.textContent = pending; pendEl.style.display = 'inline'; }
   else pendEl.style.display = 'none';
+  const pmDue = pmDueSchedules().length;
+  const pmEl = document.getElementById('nav-pm-count');
+  if (pmDue > 0) { pmEl.textContent = pmDue; pmEl.style.display = 'inline'; }
+  else pmEl.style.display = 'none';
   populateFilters(); renderDash(); renderJobs(); renderTechs(); renderMachines();
   populateSettingsForm();
 }
@@ -1314,6 +1565,14 @@ async function reloadTechs() {
 async function reloadMachines() {
   try { G_MACHS = (await run('apiGetMachines')) || []; populateFilters(); renderMachines(); }
   catch(e) { console.error(e); }
+}
+async function reloadPm() {
+  await loadPmData();
+  const pmDue = pmDueSchedules().length;
+  const pmEl = document.getElementById('nav-pm-count');
+  if (pmDue > 0) { pmEl.textContent = pmDue; pmEl.style.display = 'inline'; }
+  else pmEl.style.display = 'none';
+  renderPm();
 }
 
 async function refreshData() {
@@ -1333,6 +1592,9 @@ function run(fn, ...args) {
     case 'apiGetTechs': return apiGetTechs();
     case 'apiGetSettings': return apiGetSettings();
     case 'apiGetTimeline': return apiGetTimeline(args[0]);
+    case 'apiGetPmChecklists': return apiGetPmChecklists();
+    case 'apiGetPmSchedules': return apiGetPmSchedules();
+    case 'apiGetPmRecords': return apiGetPmRecords();
     case 'apiPost': return apiPost(args[0]);
     default: return Promise.reject(new Error('ไม่รู้จักคำสั่ง: ' + fn));
   }
@@ -1349,10 +1611,11 @@ function go(p, btn) {
   document.querySelectorAll('.nb').forEach(x => x.classList.remove('on'));
   document.getElementById('p-' + p).classList.add('on');
   btn.classList.add('on');
-  const titles = {dash:'แดชบอร์ด', jobs:'รายการซ่อม', rep:'รายงานสรุป', techs:'ทีมช่าง', mach:'เครื่องจักร / ยานพาหนะ', set:'ตั้งค่า'};
+  const titles = {dash:'แดชบอร์ด', jobs:'รายการซ่อม', rep:'รายงานสรุป', techs:'ทีมช่าง', mach:'เครื่องจักร / ยานพาหนะ', pm:'PM เครื่องจักร', set:'ตั้งค่า'};
   document.getElementById('topbar-title').textContent = titles[p] || '';
   if (p === 'rep') renderReports();
   if (p === 'set') populateSettingsForm();
+  if (p === 'pm') renderPm();
   closeSidebar();
   window.scrollTo(0,0);
 }
@@ -1491,6 +1754,7 @@ function renderDash() {
     <div class="met green"><i class="ti ti-circle-check met-icon"></i><span class="met-val">${s.done}</span><span class="met-lbl">เสร็จสิ้น</span></div>
     <div class="met red"><i class="ti ti-alert-triangle met-icon"></i><span class="met-val">${s.overdue}</span><span class="met-lbl">เลยกำหนด</span></div>
     <div class="met teal"><i class="ti ti-coin met-icon"></i><span class="met-val" style="font-size:20px">${s.cost.toLocaleString('th-TH',{maximumFractionDigits:0})} ฿</span><span class="met-lbl">ค่าใช้จ่ายรวม</span></div>
+    <div class="met purple"><i class="ti ti-checklist met-icon"></i><span class="met-val">${pmDueSchedules().length}</span><span class="met-lbl">PM ครบกำหนด</span></div>
   `;
 
   const hiJobs = G_JOBS.filter(j => (j["ความเร่งด่วน"] === 'สูง' && !['เสร็จสิ้น','ยกเลิก'].includes(j["สถานะ"])) || isOverdue(j))
@@ -1850,6 +2114,326 @@ async function deleteMachineConfirm() {
     toast('🗑️ ลบเครื่องจักรแล้ว');
   } catch(err) {
     Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  }
+}
+
+// ============================================================
+//  PM (PREVENTIVE MAINTENANCE)
+// ============================================================
+function pmFreqLabel(f) {
+  return { daily: 'รายวัน', weekly: 'รายสัปดาห์', monthly: 'รายเดือน' }[f] || f;
+}
+function pmDueSchedules() {
+  const today = todayStr();
+  return G_PM_SCHEDULES.filter(s => s.active !== false && s.next_due_date && s.next_due_date <= today);
+}
+
+function renderPm() {
+  renderPmMetrics(); renderPmDue(); renderPmSchedTable(); renderPmChecklistList(); renderPmHistory();
+}
+
+function renderPmMetrics() {
+  const el = document.getElementById('pm-met');
+  if (!el) return;
+  const today = todayStr();
+  const active = G_PM_SCHEDULES.filter(s => s.active !== false);
+  const overdue = active.filter(s => s.next_due_date && s.next_due_date < today).length;
+  const dueToday = active.filter(s => s.next_due_date === today).length;
+  const issues = G_PM_RECORDS.filter(r => r.has_issue).length;
+  el.innerHTML = `
+    <div class="met red"><i class="ti ti-alert-triangle met-icon"></i><span class="met-val">${overdue}</span><span class="met-lbl">เลยกำหนด</span></div>
+    <div class="met orange"><i class="ti ti-clock met-icon"></i><span class="met-val">${dueToday}</span><span class="met-lbl">ครบกำหนดวันนี้</span></div>
+    <div class="met blue"><i class="ti ti-calendar-event met-icon"></i><span class="met-val">${active.length}</span><span class="met-lbl">แผนงานทั้งหมด</span></div>
+    <div class="met teal"><i class="ti ti-clipboard-x met-icon"></i><span class="met-val">${issues}</span><span class="met-lbl">พบปัญหา (สะสม)</span></div>
+  `;
+}
+
+function renderPmDue() {
+  const el = document.getElementById('pm-due-list');
+  if (!el) return;
+  const today = todayStr();
+  const due = pmDueSchedules().sort((a,b) => a.next_due_date.localeCompare(b.next_due_date));
+  if (!due.length) {
+    el.innerHTML = '<div class="empty-state"><i class="ti ti-mood-happy"></i><p>ไม่มีรายการที่ต้องตรวจตอนนี้</p></div>';
+    return;
+  }
+  el.innerHTML = due.map(s => {
+    const cl = G_PM_CHECKLISTS.find(c => c.id === s.checklist_id);
+    const od = s.next_due_date < today;
+    return `
+    <div class="job-row${od?' overdue':''}" onclick="openPmCheckForm(${s.id})">
+      <div class="job-row-id">${pmFreqLabel(s.frequency)}</div>
+      <div class="job-row-body">
+        <div class="job-row-main">${escHtml(s.machine_name)}</div>
+        <div class="job-row-sub">${escHtml(cl ? cl.name : '-')} · ครบกำหนด ${escHtml(s.next_due_date)}</div>
+      </div>
+      ${od ? '<span class="badge bh">เลยกำหนด</span>' : '<span class="badge bw">วันนี้</span>'}
+    </div>`;
+  }).join('');
+}
+
+function renderPmSchedTable() {
+  const tbody = document.getElementById('pm-sched-body');
+  if (!tbody) return;
+  if (!G_PM_SCHEDULES.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text3)">ยังไม่มีแผนงาน PM — กด "เพิ่มแผนงาน" เพื่อเริ่ม</td></tr>`;
+    return;
+  }
+  const today = todayStr();
+  tbody.innerHTML = G_PM_SCHEDULES.map(s => {
+    const cl = G_PM_CHECKLISTS.find(c => c.id === s.checklist_id);
+    const od = s.active !== false && s.next_due_date && s.next_due_date < today;
+    const dueToday = s.active !== false && s.next_due_date === today;
+    let dueCell = escHtml(s.next_due_date || '-');
+    if (od) dueCell = `<span class="badge bh">${escHtml(s.next_due_date)}</span>`;
+    else if (dueToday) dueCell = `<span class="badge bw">${escHtml(s.next_due_date)}</span>`;
+    return `<tr>
+      <td style="font-weight:600">${escHtml(s.machine_name)}${s.active===false?' <span class="badge bc" style="margin-left:6px">ปิดใช้งาน</span>':''}</td>
+      <td>${escHtml(cl ? cl.name : '-')}</td>
+      <td>${pmFreqLabel(s.frequency)}</td>
+      <td>${dueCell}</td>
+      <td>${s.last_checked_at ? escHtml(formatThaiDateTime(s.last_checked_at)) : '-'}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn btn-sm btn-icon" title="ตรวจเลย" onclick="openPmCheckForm(${s.id})"><i class="ti ti-checklist"></i></button>
+        <button class="btn btn-sm btn-icon" title="แก้ไข" onclick="openPmSchedForm(${s.id})"><i class="ti ti-edit"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPmChecklistList() {
+  const el = document.getElementById('pm-checklist-list');
+  if (!el) return;
+  if (!G_PM_CHECKLISTS.length) {
+    el.innerHTML = '<div class="empty-state"><i class="ti ti-clipboard-x"></i><p>ยังไม่มีเช็คลิสต์ PM</p></div>';
+    return;
+  }
+  el.innerHTML = G_PM_CHECKLISTS.map(c => `
+    <div class="pmc-row">
+      <div style="flex:1;min-width:0">
+        <div class="pmc-row-name">${escHtml(c.name)}</div>
+        <div class="pmc-row-items">${(c.items||[]).length} รายการ · ${escHtml((c.items||[]).slice(0,3).join(', '))}${(c.items||[]).length>3?' ...':''}</div>
+      </div>
+      <button class="btn btn-sm btn-icon" title="แก้ไข" onclick="openPmChecklistForm(${c.id})"><i class="ti ti-edit"></i></button>
+    </div>`).join('');
+}
+
+function renderPmHistory() {
+  const el = document.getElementById('pm-history-list');
+  const countEl = document.getElementById('pm-hist-count');
+  if (!el) return;
+  if (countEl) countEl.textContent = G_PM_RECORDS.length + ' รายการ';
+  if (!G_PM_RECORDS.length) {
+    el.innerHTML = '<div class="empty-state"><i class="ti ti-history"></i><p>ยังไม่มีประวัติการตรวจ</p></div>';
+    return;
+  }
+  el.innerHTML = G_PM_RECORDS.slice(0, 30).map(r => `
+    <div class="job-row">
+      <div class="job-row-id">${r.has_issue?'⚠️':'✅'}</div>
+      <div class="job-row-body">
+        <div class="job-row-main">${escHtml(r.machine_name)} — ${escHtml(r.checklist_name)}</div>
+        <div class="job-row-sub">${escHtml(formatThaiDateTime(r.checked_at))}${r.checked_by?' · '+escHtml(r.checked_by):''}${r.overall_note?' · '+escHtml(r.overall_note):''}</div>
+      </div>
+      ${r.has_issue?'<span class="badge bh">พบปัญหา</span>':'<span class="badge bd">ปกติ</span>'}
+    </div>`).join('');
+}
+
+function populatePmDropdowns() {
+  const machSel = document.getElementById('pms-machine');
+  if (machSel) machSel.innerHTML = '<option value="">เลือกเครื่องจักร...</option>' +
+    G_MACHS.map(m => `<option value="${escAttr(m["ชื่อเครื่องจักร/ทะเบียนรถ"])}">${escHtml(m["ชื่อเครื่องจักร/ทะเบียนรถ"])}</option>`).join('');
+
+  const clSel = document.getElementById('pms-checklist');
+  if (clSel) clSel.innerHTML = '<option value="">เลือกเช็คลิสต์...</option>' +
+    G_PM_CHECKLISTS.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
+
+  const techSel = document.getElementById('pmk-tech');
+  if (techSel) techSel.innerHTML = '<option value="">— ไม่ระบุ —</option>' +
+    G_TECHS.map(t => `<option value="${escAttr(t["ชื่อช่าง"])}">${escHtml(t["ชื่อช่าง"])}</option>`).join('');
+}
+
+// ---------- SCHEDULE FORM ----------
+function openPmSchedForm(id = null) {
+  populatePmDropdowns();
+  const s = id ? G_PM_SCHEDULES.find(x => x.id === id) : null;
+  document.getElementById('pms-title').textContent = s ? 'แก้ไขแผนงาน PM' : 'เพิ่มแผนงาน PM';
+  document.getElementById('pms-id').value = id || '';
+  document.getElementById('pms-del-btn').style.display = s ? 'inline-flex' : 'none';
+  document.getElementById('pms-active-box').style.display = s ? 'block' : 'none';
+  document.getElementById('f-pm-sched').reset();
+  if (s) {
+    document.getElementById('pms-machine').value = s.machine_name;
+    document.getElementById('pms-checklist').value = s.checklist_id;
+    document.getElementById('pms-freq').value = s.frequency;
+    document.getElementById('pms-due').value = s.next_due_date || '';
+    document.getElementById('pms-active').checked = s.active !== false;
+  } else {
+    document.getElementById('pms-due').value = todayStr();
+    document.getElementById('pms-active').checked = true;
+  }
+  openM('m-pm-sched');
+}
+
+async function savePmSched(e) {
+  e.preventDefault();
+  const id = document.getElementById('pms-id').value;
+  const data = {
+    machine_name: document.getElementById('pms-machine').value,
+    checklist_id: Number(document.getElementById('pms-checklist').value),
+    frequency: document.getElementById('pms-freq').value,
+    next_due_date: document.getElementById('pms-due').value || todayStr(),
+    active: document.getElementById('pms-active').checked,
+  };
+  if (!data.machine_name || !data.checklist_id) { Swal.fire({icon:'warning', title:'กรุณาเลือกเครื่องจักรและเช็คลิสต์'}); return; }
+  const btn = document.getElementById('pms-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
+  try {
+    const res = await run('apiPost', JSON.stringify({ action: id ? 'updatePmSched' : 'addPmSched', id, data }));
+    if (!res.success) throw new Error(res.message);
+    closeM('m-pm-sched');
+    await reloadPm();
+    toast('✅ ' + res.message);
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i>บันทึก';
+  }
+}
+
+async function deletePmSchedConfirm() {
+  const id = document.getElementById('pms-id').value;
+  if (!id) return;
+  const r = await Swal.fire({
+    icon:'warning', title:'ยืนยันการลบ', text:'ต้องการลบแผนงาน PM นี้ใช่หรือไม่? (ประวัติการตรวจเดิมจะไม่ถูกลบ)',
+    showCancelButton:true, confirmButtonText:'ลบ', confirmButtonColor:'#C62828', cancelButtonText:'ยกเลิก'
+  });
+  if (!r.isConfirmed) return;
+  try {
+    const res = await run('apiPost', JSON.stringify({action:'deletePmSched', id}));
+    if (!res.success) throw new Error(res.message);
+    closeM('m-pm-sched');
+    await reloadPm();
+    toast('🗑️ ลบแผนงาน PM แล้ว');
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  }
+}
+
+// ---------- CHECKLIST TEMPLATE FORM ----------
+function openPmChecklistForm(id = null) {
+  const c = id ? G_PM_CHECKLISTS.find(x => x.id === id) : null;
+  document.getElementById('pmc-title').textContent = c ? 'แก้ไขเช็คลิสต์' : 'เพิ่มเช็คลิสต์';
+  document.getElementById('pmc-id').value = id || '';
+  document.getElementById('pmc-del-btn').style.display = c ? 'inline-flex' : 'none';
+  document.getElementById('pmc-nm').value = c ? c.name : '';
+  document.getElementById('pmc-items').value = c ? (c.items||[]).join('\n') : '';
+  openM('m-pm-checklist');
+}
+
+async function savePmChecklist(e) {
+  e.preventDefault();
+  const id = document.getElementById('pmc-id').value;
+  const items = document.getElementById('pmc-items').value.split('\n').map(s => s.trim()).filter(Boolean);
+  if (!items.length) { Swal.fire({icon:'warning', title:'กรุณากรอกรายการตรวจอย่างน้อย 1 รายการ'}); return; }
+  const data = { name: document.getElementById('pmc-nm').value.trim(), items };
+  const btn = document.getElementById('pmc-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
+  try {
+    const res = await run('apiPost', JSON.stringify({ action: id ? 'updatePmChecklist' : 'addPmChecklist', id, data }));
+    if (!res.success) throw new Error(res.message);
+    closeM('m-pm-checklist');
+    await reloadPm();
+    toast('✅ ' + res.message);
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i>บันทึก';
+  }
+}
+
+async function deletePmChecklistConfirm() {
+  const id = document.getElementById('pmc-id').value;
+  if (!id) return;
+  const r = await Swal.fire({
+    icon:'warning', title:'ยืนยันการลบ', text:'ลบได้เฉพาะเมื่อไม่มีแผนงาน PM ใช้เช็คลิสต์นี้อยู่',
+    showCancelButton:true, confirmButtonText:'ลบ', confirmButtonColor:'#C62828', cancelButtonText:'ยกเลิก'
+  });
+  if (!r.isConfirmed) return;
+  try {
+    const res = await run('apiPost', JSON.stringify({action:'deletePmChecklist', id}));
+    if (!res.success) throw new Error(res.message);
+    closeM('m-pm-checklist');
+    await reloadPm();
+    toast('🗑️ ลบเช็คลิสต์แล้ว');
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  }
+}
+
+// ---------- PERFORM CHECK ----------
+function openPmCheckForm(scheduleId) {
+  const s = G_PM_SCHEDULES.find(x => x.id === scheduleId);
+  if (!s) { toast('⚠️ ไม่พบแผนงาน PM'); return; }
+  const cl = G_PM_CHECKLISTS.find(c => c.id === s.checklist_id);
+  if (!cl) { toast('⚠️ ไม่พบเช็คลิสต์ของแผนงานนี้'); return; }
+  document.getElementById('pmk-title').textContent = `ตรวจ PM — ${s.machine_name}`;
+  document.getElementById('pmk-sched-id').value = scheduleId;
+  document.getElementById('f-pm-check').reset();
+  populatePmDropdowns();
+  document.getElementById('pmk-items').innerHTML = (cl.items || []).map((item, i) => `
+    <div class="pmk-item" data-idx="${i}">
+      <div class="pmk-item-txt">${escHtml(item)}</div>
+      <div class="pmk-toggle">
+        <button type="button" class="pmk-btn ok on" onclick="pmSetItemStatus(this,'ok')"><i class="ti ti-check"></i> ปกติ</button>
+        <button type="button" class="pmk-btn issue" onclick="pmSetItemStatus(this,'issue')"><i class="ti ti-alert-triangle"></i> ต้องแก้ไข</button>
+      </div>
+      <input type="text" class="pmk-note-input" placeholder="รายละเอียด (ถ้ามี)" style="display:none">
+    </div>`).join('');
+  openM('m-pm-check');
+}
+
+function pmSetItemStatus(btn, status) {
+  const row = btn.closest('.pmk-item');
+  row.querySelectorAll('.pmk-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  row.querySelector('.pmk-note-input').style.display = status === 'issue' ? 'block' : 'none';
+}
+
+async function savePmCheck(e) {
+  e.preventDefault();
+  const scheduleId = Number(document.getElementById('pmk-sched-id').value);
+  const s = G_PM_SCHEDULES.find(x => x.id === scheduleId);
+  const cl = s ? G_PM_CHECKLISTS.find(c => c.id === s.checklist_id) : null;
+  if (!s || !cl) { toast('⚠️ ไม่พบข้อมูลแผนงาน PM'); return; }
+  const results = [...document.querySelectorAll('#pmk-items .pmk-item')].map(row => {
+    const onBtn = row.querySelector('.pmk-btn.on');
+    return {
+      item: row.querySelector('.pmk-item-txt').textContent,
+      status: onBtn && onBtn.classList.contains('issue') ? 'issue' : 'ok',
+      note: row.querySelector('.pmk-note-input').value.trim(),
+    };
+  });
+  const data = {
+    schedule_id: scheduleId,
+    machine_name: s.machine_name,
+    checklist_name: cl.name,
+    checked_by: document.getElementById('pmk-tech').value,
+    results,
+    overall_note: document.getElementById('pmk-note').value.trim(),
+  };
+  const btn = document.getElementById('pmk-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> กำลังบันทึก...';
+  try {
+    const res = await run('apiPost', JSON.stringify({action:'addPmRecord', data}));
+    if (!res.success) throw new Error(res.message);
+    closeM('m-pm-check');
+    await reloadPm();
+    const hasIssue = results.some(r => r.status === 'issue');
+    toast(hasIssue ? '⚠️ บันทึกผลตรวจแล้ว พบรายการที่ต้องแก้ไข' : '✅ บันทึกผลตรวจแล้ว ปกติทุกรายการ');
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i>บันทึกผลตรวจ';
   }
 }
 
