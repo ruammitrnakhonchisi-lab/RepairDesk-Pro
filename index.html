@@ -417,16 +417,17 @@ button:focus-visible,.btn:focus-visible,.nb:focus-visible{outline:2px solid var(
 .tl-body{font-size:12px;color:var(--text2);margin-top:2px}
 .tl-body b{color:var(--text)}
 
-/* PM checklist items (perform-check modal) */
-.pmk-item{padding:10px 0;border-bottom:1px solid var(--border)}
+/* PM checklist items (perform-check modal) — big, equal-width tap targets
+   since this is filled out standing at a machine on a phone */
+.pmk-item{padding:14px 0;border-bottom:1px solid var(--border)}
 .pmk-item:last-child{border-bottom:none}
-.pmk-item-txt{font-size:13px;color:var(--text);margin-bottom:8px}
-.pmk-toggle{display:flex;gap:6px}
-.pmk-btn{padding:6px 14px;border-radius:8px;border:1.5px solid var(--border2);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);font-family:'Prompt',sans-serif;transition:var(--transition)}
+.pmk-item-txt{font-size:14px;color:var(--text);margin-bottom:10px;line-height:1.4}
+.pmk-toggle{display:flex;gap:8px}
+.pmk-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 10px;min-height:46px;border-radius:10px;border:1.5px solid var(--border2);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);font-family:'Prompt',sans-serif;transition:var(--transition)}
 .pmk-btn:hover{border-color:var(--brand)}
 .pmk-btn.ok.on{background:var(--c-done-bg);color:var(--c-done);border-color:var(--c-done-b)}
 .pmk-btn.issue.on{background:var(--c-hi-bg);color:var(--c-hi);border-color:var(--c-hi-b)}
-.pmk-note-input{width:100%;margin-top:8px;font-size:12px;padding:7px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-family:'Prompt',sans-serif}
+.pmk-note-input{width:100%;margin-top:10px;font-size:14px;padding:11px 12px;min-height:44px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-family:'Prompt',sans-serif}
 
 .pt-checkbox{display:inline-block;width:15px;height:15px;border:1.5px solid #0F172A;border-radius:3px;vertical-align:middle}
 
@@ -435,6 +436,14 @@ button:focus-visible,.btn:focus-visible,.nb:focus-visible{outline:2px solid var(
 .pmc-row:last-child{border-bottom:none}
 .pmc-row-name{font-weight:600;font-size:13px;color:var(--text)}
 .pmc-row-items{font-size:11.5px;color:var(--text3);margin-top:3px}
+
+/* PM schedule list — cards instead of a wide table so it stays usable on a phone */
+.pm-sched-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.pm-sched-card:last-child{border-bottom:none}
+.pm-sched-main{flex:1;min-width:200px}
+.pm-sched-name{font-weight:600;font-size:13.5px;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pm-sched-sub{font-size:11.5px;color:var(--text3);margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pm-sched-actions{display:flex;gap:6px;flex-shrink:0}
 
 /* Pagination */
 .pager{display:flex;gap:6px;justify-content:center;align-items:center;margin-top:16px;flex-wrap:wrap}
@@ -478,6 +487,9 @@ kbd{background:var(--surface2);padding:2px 8px;border-radius:5px;border:1px soli
   .job-row{padding:12px;gap:10px;flex-wrap:wrap}
   .job-row-badges{flex-basis:100%;justify-content:flex-start}
   .grid2{grid-template-columns:1fr}
+  .pm-sched-card{padding:12px 14px}
+  .pm-sched-actions{flex-basis:100%;justify-content:flex-end}
+  .pm-sched-actions .btn-icon{width:38px;height:38px;padding:0}
 }
 @media(max-width:420px){
   .metrics{grid-template-columns:1fr 1fr}
@@ -805,14 +817,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
             <div class="card-title"><i class="ti ti-calendar-event"></i>แผนงาน PM ทั้งหมด</div>
             <button class="btn btn-primary" onclick="openPmSchedForm()"><i class="ti ti-plus"></i> เพิ่มแผนงาน</button>
           </div>
-          <div class="table-wrap">
-            <table class="data-table" id="pm-sched-table">
-              <thead><tr>
-                <th>เครื่องจักร</th><th>เช็คลิสต์</th><th>ความถี่</th><th>ครบกำหนด</th><th>ตรวจล่าสุด</th><th style="text-align:right">การจัดการ</th>
-              </tr></thead>
-              <tbody id="pm-sched-body"></tbody>
-            </table>
-          </div>
+          <div id="pm-sched-body"></div>
         </div>
 
         <div class="card">
@@ -829,6 +834,33 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
             <span id="pm-hist-count" class="badge b-brand">0 รายการ</span>
           </div>
           <div id="pm-history-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="ti ti-report"></i>รายงาน PM</div>
+            <button class="btn btn-primary" onclick="printPmReport()"><i class="ti ti-printer"></i>พิมพ์รายงาน</button>
+          </div>
+          <div class="filter-row">
+            <div class="field"><label>ช่วงเวลา</label>
+              <select id="pmrep-type" onchange="pmRepToggleType()">
+                <option value="week">รายสัปดาห์</option>
+                <option value="month" selected>รายเดือน</option>
+              </select>
+            </div>
+            <div class="field" id="pmrep-week-box" style="display:none">
+              <label>สัปดาห์</label><input type="week" id="pmrep-week" onchange="renderPmReport()">
+            </div>
+            <div class="field" id="pmrep-month-box">
+              <label>เดือน</label><select id="pmrep-m" onchange="renderPmReport()"></select>
+            </div>
+            <div class="field" id="pmrep-year-box">
+              <label>ปี (พ.ศ.)</label><select id="pmrep-y" onchange="renderPmReport()"></select>
+            </div>
+          </div>
+          <div style="font-size:12px;font-weight:600;color:var(--brand);margin:2px 0 14px" id="pmrep-period-label"></div>
+          <div id="pmrep-met" class="metrics" style="margin-bottom:16px"></div>
+          <div id="pmrep-list"></div>
         </div>
       </div>
     </div>
@@ -1488,6 +1520,11 @@ async function addPmRecord(data) {
   if (error) return { success: false, message: error.message };
   return { success: true, message: 'บันทึกผลตรวจ PM เรียบร้อย' };
 }
+async function updatePmRecordResults(id, data) {
+  const { error } = await SB.from('pm_records').update({ results: data.results, has_issue: data.has_issue }).eq('id', id);
+  if (error) return { success: false, message: error.message };
+  return { success: true, message: 'อัปเดตสถานะเรียบร้อย' };
+}
 
 async function apiPost(bodyStr) {
   try {
@@ -1510,6 +1547,7 @@ async function apiPost(bodyStr) {
       case 'updatePmSched': return await updatePmSched(body.id, body.data);
       case 'deletePmSched': return await deletePmSched(body.id);
       case 'addPmRecord': return await addPmRecord(body.data);
+      case 'updatePmRecordResults': return await updatePmRecordResults(body.id, body.data);
       default: return { success: false, message: 'ไม่รู้จักคำสั่ง: ' + body.action };
     }
   } catch (e) {
@@ -1713,6 +1751,13 @@ function populateFilters() {
     `<option value="${y}">${y + 543}</option>`).join('');
   if (mcSel) mcSel.innerHTML = '<option value="">ทั้งหมด</option>' +
     G_MACHS.map(m => `<option>${escHtml(m["ชื่อเครื่องจักร/ทะเบียนรถ"])}</option>`).join('');
+
+  const pmM = document.getElementById('pmrep-m');
+  const pmY = document.getElementById('pmrep-y');
+  if (pmM && !pmM.options.length) pmM.innerHTML = MONTHS_TH.map((m,i) =>
+    `<option value="${i+1}" ${new Date().getMonth()===i?'selected':''}>${m}</option>`).join('');
+  if (pmY && !pmY.options.length) pmY.innerHTML = [year, year-1, year-2].map(y =>
+    `<option value="${y}">${y + 543}</option>`).join('');
   if (techSel) {
     const names = [...new Set(G_TECHS.map(t => (t["ชื่อช่าง"]||'').trim()).filter(n=>n))];
     techSel.innerHTML = '<option value="">ทั้งหมด</option>' + names.map(n => `<option>${escHtml(n)}</option>`).join('');
@@ -2152,7 +2197,17 @@ function pmDueSchedules() {
 }
 
 function renderPm() {
-  renderPmMetrics(); renderPmDue(); renderPmSchedTable(); renderPmChecklistList(); renderPmHistory();
+  renderPmMetrics(); renderPmDue(); renderPmSchedTable(); renderPmChecklistList(); renderPmHistory(); renderPmReport();
+}
+function pmItemBadge(status) {
+  if (status === 'issue') return '<span class="badge bh">⚠️ ต้องแก้ไข</span>';
+  if (status === 'resolved') return '<span class="badge bd">✔️ แก้ไขแล้ว</span>';
+  return '<span class="badge bd">✅ ปกติ</span>';
+}
+function pmRecordStatusLabel(r) {
+  if (r.has_issue) return { text: 'พบปัญหา', badge: 'bh' };
+  if ((r.results||[]).some(it => it.status === 'resolved')) return { text: 'แก้ไขแล้ว', badge: 'bd' };
+  return { text: 'ปกติ', badge: 'bd' };
 }
 
 function renderPmMetrics() {
@@ -2197,32 +2252,37 @@ function renderPmDue() {
 }
 
 function renderPmSchedTable() {
-  const tbody = document.getElementById('pm-sched-body');
-  if (!tbody) return;
+  const el = document.getElementById('pm-sched-body');
+  if (!el) return;
   if (!G_PM_SCHEDULES.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text3)">ยังไม่มีแผนงาน PM — กด "เพิ่มแผนงาน" เพื่อเริ่ม</td></tr>`;
+    el.innerHTML = '<div class="empty-state"><i class="ti ti-calendar-off"></i><p>ยังไม่มีแผนงาน PM — กด "เพิ่มแผนงาน" เพื่อเริ่ม</p></div>';
     return;
   }
   const today = todayStr();
-  tbody.innerHTML = G_PM_SCHEDULES.map(s => {
+  el.innerHTML = G_PM_SCHEDULES.map(s => {
     const cl = G_PM_CHECKLISTS.find(c => c.id === s.checklist_id);
     const od = s.active !== false && s.next_due_date && s.next_due_date < today;
     const dueToday = s.active !== false && s.next_due_date === today;
-    let dueCell = escHtml(s.next_due_date || '-');
-    if (od) dueCell = `<span class="badge bh">${escHtml(s.next_due_date)}</span>`;
-    else if (dueToday) dueCell = `<span class="badge bw">${escHtml(s.next_due_date)}</span>`;
-    return `<tr>
-      <td style="font-weight:600">${escHtml(s.machine_name)}${s.active===false?' <span class="badge bc" style="margin-left:6px">ปิดใช้งาน</span>':''}</td>
-      <td>${escHtml(cl ? cl.name : '-')}</td>
-      <td>${pmFreqLabel(s.frequency)}</td>
-      <td>${dueCell}</td>
-      <td>${s.last_checked_at ? escHtml(formatThaiDateTime(s.last_checked_at)) : '-'}</td>
-      <td style="text-align:right;white-space:nowrap">
+    let dueBadge = `<span class="badge b-brand">ครบกำหนด ${escHtml(s.next_due_date||'-')}</span>`;
+    if (od) dueBadge = `<span class="badge bh">เลยกำหนด ${escHtml(s.next_due_date)}</span>`;
+    else if (dueToday) dueBadge = `<span class="badge bw">ครบกำหนดวันนี้</span>`;
+    return `
+    <div class="pm-sched-card">
+      <div class="pm-sched-main">
+        <div class="pm-sched-name">${escHtml(s.machine_name)}${s.active===false?' <span class="badge bc">ปิดใช้งาน</span>':''}</div>
+        <div class="pm-sched-sub">
+          <span>${escHtml(cl ? cl.name : '-')}</span>
+          <span class="badge b-brand">${pmFreqLabel(s.frequency)}</span>
+          ${dueBadge}
+          ${s.last_checked_at ? `<span>ตรวจล่าสุด ${escHtml(formatThaiDateTime(s.last_checked_at))}</span>` : ''}
+        </div>
+      </div>
+      <div class="pm-sched-actions">
         <button class="btn btn-sm btn-icon" title="ตรวจเลย" onclick="openPmCheckForm(${s.id})"><i class="ti ti-checklist"></i></button>
         <button class="btn btn-sm btn-icon" title="พิมพ์ใบตรวจ" onclick="printPmSched(${s.id})"><i class="ti ti-printer"></i></button>
         <button class="btn btn-sm btn-icon" title="แก้ไข" onclick="openPmSchedForm(${s.id})"><i class="ti ti-edit"></i></button>
-      </td>
-    </tr>`;
+      </div>
+    </div>`;
   }).join('');
 }
 
@@ -2252,15 +2312,19 @@ function renderPmHistory() {
     el.innerHTML = '<div class="empty-state"><i class="ti ti-history"></i><p>ยังไม่มีประวัติการตรวจ</p></div>';
     return;
   }
-  el.innerHTML = G_PM_RECORDS.slice(0, 30).map(r => `
+  el.innerHTML = G_PM_RECORDS.slice(0, 30).map(r => {
+    const st = pmRecordStatusLabel(r);
+    const icon = r.has_issue ? '⚠️' : (st.text === 'แก้ไขแล้ว' ? '✔️' : '✅');
+    return `
     <div class="job-row" onclick="openPmRecordDetail(${r.id})">
-      <div class="job-row-id">${r.has_issue?'⚠️':'✅'}</div>
+      <div class="job-row-id">${icon}</div>
       <div class="job-row-body">
         <div class="job-row-main">${escHtml(r.machine_name)} — ${escHtml(r.checklist_name)}</div>
         <div class="job-row-sub">${escHtml(formatThaiDateTime(r.checked_at))}${r.checked_by?' · '+escHtml(r.checked_by):''}${r.overall_note?' · '+escHtml(r.overall_note):''}</div>
       </div>
-      ${r.has_issue?'<span class="badge bh">พบปัญหา</span>':'<span class="badge bd">ปกติ</span>'}
-    </div>`).join('');
+      <span class="badge ${st.badge}">${st.text}</span>
+    </div>`;
+  }).join('');
 }
 
 function populatePmDropdowns() {
@@ -2473,18 +2537,36 @@ function openPmRecordDetail(id) {
     <div><b style="color:var(--text)">ผู้ตรวจ:</b> ${escHtml(r.checked_by || '-')}</div>
   `;
   const items = r.results || [];
-  document.getElementById('pmr-items').innerHTML = items.length ? items.map(it => `
+  document.getElementById('pmr-items').innerHTML = items.length ? items.map((it, i) => `
     <div class="pmk-item">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
         <div class="pmk-item-txt" style="margin-bottom:0;flex:1">${escHtml(it.item)}</div>
-        <span class="badge ${it.status==='issue'?'bh':'bd'}">${it.status==='issue'?'⚠️ ต้องแก้ไข':'✅ ปกติ'}</span>
+        ${pmItemBadge(it.status)}
       </div>
       ${it.note ? `<div style="margin-top:6px;font-size:12px;color:var(--text2)">📝 ${escHtml(it.note)}</div>` : ''}
+      ${it.status==='issue' ? `<button type="button" class="btn btn-sm" style="margin-top:8px" onclick="resolvePmItem(${r.id},${i})"><i class="ti ti-check"></i> ทำเครื่องหมายว่าแก้ไขแล้ว</button>` : ''}
     </div>`).join('') : '<div class="empty-state"><p>ไม่มีรายการตรวจ</p></div>';
   document.getElementById('pmr-note').innerHTML = r.overall_note
     ? `<div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2)">📌 ${escHtml(r.overall_note)}</div>`
     : '';
   openM('m-pm-record');
+}
+
+async function resolvePmItem(recordId, idx) {
+  const r = G_PM_RECORDS.find(x => x.id === recordId);
+  if (!r) return;
+  const results = (r.results || []).map((it, i) => i === idx ? { ...it, status: 'resolved' } : it);
+  const hasIssue = results.some(it => it.status === 'issue');
+  try {
+    const res = await run('apiPost', JSON.stringify({ action: 'updatePmRecordResults', id: recordId, data: { results, has_issue: hasIssue } }));
+    if (!res.success) throw new Error(res.message);
+    r.results = results; r.has_issue = hasIssue;
+    openPmRecordDetail(recordId);
+    renderPmHistory(); renderPmMetrics(); renderPmReport();
+    toast('✅ อัปเดตสถานะเป็นแก้ไขแล้ว');
+  } catch(err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  }
 }
 
 // ---------- PRINT PM SCHEDULE SHEET ----------
@@ -2571,6 +2653,182 @@ function printPmSched(id) {
   document.getElementById('print-ticket').innerHTML = html;
   document.body.classList.add('print-mode-ticket');
   window.scrollTo(0,0);
+}
+
+// ---------- WEEKLY / MONTHLY PM REPORT ----------
+function dateOnlyBKK(iso) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(iso));
+}
+function isoWeekMonday(year, week) {
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const jan4Day = jan4.getUTCDay() || 7;
+  const monday = new Date(jan4);
+  monday.setUTCDate(jan4.getUTCDate() - jan4Day + 1 + (week - 1) * 7);
+  return monday;
+}
+function ymd(d) { return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0'); }
+
+function pmRepToggleType() {
+  const type = document.getElementById('pmrep-type').value;
+  document.getElementById('pmrep-week-box').style.display = type === 'week' ? '' : 'none';
+  document.getElementById('pmrep-month-box').style.display = type === 'month' ? '' : 'none';
+  document.getElementById('pmrep-year-box').style.display = type === 'month' ? '' : 'none';
+  renderPmReport();
+}
+
+function pmReportRange() {
+  const typeEl = document.getElementById('pmrep-type');
+  if (!typeEl) return null;
+  if (typeEl.value === 'week') {
+    const val = document.getElementById('pmrep-week').value; // "2026-W35"
+    if (!val || !val.includes('-W')) return null;
+    const [y, w] = val.split('-W').map(Number);
+    const monday = isoWeekMonday(y, w);
+    const sunday = new Date(monday); sunday.setUTCDate(monday.getUTCDate() + 6);
+    const fmt = d => d.toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'numeric', timeZone:'UTC' });
+    return { startStr: ymd(monday), endStr: ymd(sunday), label: `สัปดาห์ที่ ${w}/${y} (${fmt(monday)} – ${fmt(sunday)})` };
+  }
+  const m = parseInt(document.getElementById('pmrep-m').value);
+  const y = parseInt(document.getElementById('pmrep-y').value);
+  if (!m || !y) return null;
+  const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  return {
+    startStr: `${y}-${String(m).padStart(2,'0')}-01`,
+    endStr: `${y}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`,
+    label: `${MONTHS_TH[m-1]} ${y+543}`,
+  };
+}
+
+function pmReportRecords(range) {
+  if (!range) return [];
+  return G_PM_RECORDS.filter(r => {
+    const d = dateOnlyBKK(r.checked_at);
+    return d >= range.startStr && d <= range.endStr;
+  }).sort((a,b) => new Date(a.checked_at) - new Date(b.checked_at));
+}
+
+function pmReportStats(records) {
+  const totalChecks = records.length;
+  const machinesChecked = new Set(records.map(r => r.machine_name)).size;
+  const stillOpen = records.filter(r => r.has_issue).length;
+  const hadIssue = records.filter(r => (r.results||[]).some(it => it.status === 'issue' || it.status === 'resolved')).length;
+  const resolved = hadIssue - stillOpen;
+  return { totalChecks, machinesChecked, stillOpen, resolved };
+}
+
+function renderPmReport() {
+  const metEl = document.getElementById('pmrep-met');
+  if (!metEl) return;
+  const range = pmReportRange();
+  const records = pmReportRecords(range);
+  const s = pmReportStats(records);
+
+  document.getElementById('pmrep-period-label').textContent = range ? range.label : 'เลือกช่วงเวลาที่ต้องการดูรายงาน';
+  metEl.innerHTML = `
+    <div class="met blue"><i class="ti ti-checklist met-icon"></i><span class="met-val">${s.totalChecks}</span><span class="met-lbl">ครั้งที่ตรวจ</span></div>
+    <div class="met teal"><i class="ti ti-tool met-icon"></i><span class="met-val">${s.machinesChecked}</span><span class="met-lbl">เครื่องจักรที่ตรวจ</span></div>
+    <div class="met red"><i class="ti ti-alert-triangle met-icon"></i><span class="met-val">${s.stillOpen}</span><span class="met-lbl">พบปัญหา (ยังไม่แก้)</span></div>
+    <div class="met green"><i class="ti ti-circle-check met-icon"></i><span class="met-val">${s.resolved}</span><span class="met-lbl">แก้ไขแล้ว</span></div>
+  `;
+
+  const listEl = document.getElementById('pmrep-list');
+  listEl.innerHTML = records.length ? records.map(r => {
+    const st = pmRecordStatusLabel(r);
+    return `
+    <div class="job-row" onclick="openPmRecordDetail(${r.id})">
+      <div class="job-row-id">${escHtml(dateOnlyBKK(r.checked_at))}</div>
+      <div class="job-row-body">
+        <div class="job-row-main">${escHtml(r.machine_name)} — ${escHtml(r.checklist_name)}</div>
+        <div class="job-row-sub">${r.checked_by ? escHtml(r.checked_by) : 'ไม่ระบุผู้ตรวจ'}</div>
+      </div>
+      <span class="badge ${st.badge}">${st.text}</span>
+    </div>`;
+  }).join('') : '<div class="empty-state"><i class="ti ti-calendar-x"></i><p>ไม่มีข้อมูลการตรวจในช่วงนี้</p></div>';
+}
+
+function printPmReport() {
+  const range = pmReportRange();
+  if (!range) { toast('⚠️ กรุณาเลือกช่วงเวลาที่ต้องการก่อน'); return; }
+  const records = pmReportRecords(range);
+  const s = pmReportStats(records);
+  const coName = G_SETTINGS["ชื่อบริษัท"] || 'RepairDesk Pro';
+  const coDep  = G_SETTINGS["แผนก"] || '';
+
+  const rows = records.map(r => {
+    const issueItems = (r.results||[]).filter(it => it.status === 'issue').map(it => it.item);
+    const st = pmRecordStatusLabel(r);
+    const stColor = { bh:'#C62828', bd: st.text==='แก้ไขแล้ว'?'#1565C0':'#2E7D32' }[st.badge];
+    const stBg = { bh:'#FEECEC', bd: st.text==='แก้ไขแล้ว'?'#E3F2FD':'#E8F5E9' }[st.badge];
+    return `<tr>
+      <td style="text-align:center">${escHtml(dateOnlyBKK(r.checked_at))}</td>
+      <td>${escHtml(r.machine_name)}</td>
+      <td>${escHtml(r.checklist_name)}</td>
+      <td style="text-align:center">${escHtml(r.checked_by||'-')}</td>
+      <td style="text-align:center"><span style="padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:${stBg};color:${stColor}">${st.text}</span></td>
+      <td>${escHtml(issueItems.join(', ')||'-')}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:20px">ไม่มีข้อมูลการตรวจในช่วงนี้</td></tr>`;
+
+  const printWindow = window.open('','_blank','width=1100,height=750');
+  printWindow.document.write(`<!DOCTYPE html>
+<html lang="th"><head>
+<meta charset="UTF-8"><title>รายงาน PM ${escHtml(range.label)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@page{size:A4 landscape;margin:12mm 14mm}
+*{box-sizing:border-box}
+body{font-family:'Prompt',sans-serif;font-size:11px;color:#1E293B;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1D6EDB;padding-bottom:10px;margin-bottom:18px}
+.hdr-title{font-size:19px;font-weight:700;color:#1D6EDB;line-height:1.1}
+.hdr-sub{font-size:11px;color:#64748B;margin-top:3px}
+.hdr-right{text-align:right;font-size:11px;color:#64748B}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat{border:1px solid #E2E8F0;border-radius:8px;padding:11px 14px;text-align:center;background:#F8FAFC}
+.stat-lbl{font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.stat-val{font-size:22px;font-weight:800;color:#0F172A}
+table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:10.5px}
+thead tr{background:#1D6EDB;color:#fff}
+th{padding:8px 10px;text-align:left;font-weight:600;font-size:10px;letter-spacing:.3px}
+td{border-bottom:1px solid #E2E8F0;padding:7px 10px}
+tr:nth-child(even) td{background:#F8FAFC}
+.footer{display:flex;justify-content:space-between;font-size:10px;color:#94A3B8;border-top:1px solid #E2E8F0;padding-top:8px;margin-top:10px}
+.no-print{text-align:center;margin:20px;display:flex;justify-content:center;gap:12px}
+.btn-p{padding:10px 22px;font-family:'Prompt',sans-serif;font-size:13px;background:#1D6EDB;color:#fff;border:none;border-radius:7px;cursor:pointer;font-weight:600}
+.btn-c{padding:10px 22px;font-family:'Prompt',sans-serif;font-size:13px;background:#fff;color:#475569;border:1.5px solid #CBD5E1;border-radius:7px;cursor:pointer}
+@media print{.no-print{display:none}}
+</style></head><body>
+<div class="hdr">
+  <div>
+    <div class="hdr-title">${escHtml(coName)}</div>
+    <div class="hdr-sub">รายงานการตรวจ PM (Preventive Maintenance) — ${escHtml(range.label)}${coDep?' · '+escHtml(coDep):''}</div>
+  </div>
+  <div class="hdr-right">
+    <div style="font-size:12px;font-weight:700">พิมพ์เมื่อ</div>
+    <div>${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})} ${new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})} น.</div>
+  </div>
+</div>
+<div class="stats">
+  <div class="stat"><div class="stat-lbl">ครั้งที่ตรวจ</div><div class="stat-val" style="color:#1D6EDB">${s.totalChecks}</div></div>
+  <div class="stat"><div class="stat-lbl">เครื่องจักรที่ตรวจ</div><div class="stat-val" style="color:#0F766E">${s.machinesChecked}</div></div>
+  <div class="stat"><div class="stat-lbl">พบปัญหา (ยังไม่แก้)</div><div class="stat-val" style="color:#C62828">${s.stillOpen}</div></div>
+  <div class="stat"><div class="stat-lbl">แก้ไขแล้ว</div><div class="stat-val" style="color:#2E7D32">${s.resolved}</div></div>
+</div>
+<table>
+  <thead><tr>
+    <th style="text-align:center">วันที่ตรวจ</th><th>เครื่องจักร</th><th>เช็คลิสต์</th><th style="text-align:center">ผู้ตรวจ</th><th style="text-align:center">สถานะ</th><th>รายการที่พบปัญหา</th>
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<div class="footer">
+  <span>RepairDesk Pro — รายงาน PM ${escHtml(range.label)}</span>
+  <span>ข้อมูล ณ วันที่พิมพ์</span>
+</div>
+<div class="no-print">
+  <button class="btn-p" onclick="window.print()">พิมพ์รายงาน</button>
+  <button class="btn-c" onclick="window.close()">ปิดหน้าต่าง</button>
+</div>
+</body></html>`);
+  printWindow.document.close();
 }
 
 // ============================================================
