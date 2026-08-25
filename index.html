@@ -428,6 +428,8 @@ button:focus-visible,.btn:focus-visible,.nb:focus-visible{outline:2px solid var(
 .pmk-btn.issue.on{background:var(--c-hi-bg);color:var(--c-hi);border-color:var(--c-hi-b)}
 .pmk-note-input{width:100%;margin-top:8px;font-size:12px;padding:7px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-family:'Prompt',sans-serif}
 
+.pt-checkbox{display:inline-block;width:15px;height:15px;border:1.5px solid #0F172A;border-radius:3px;vertical-align:middle}
+
 /* PM checklist template list (management card) */
 .pmc-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
 .pmc-row:last-child{border-bottom:none}
@@ -1184,6 +1186,27 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
     <div class="modal-footer">
       <button type="button" class="btn" onclick="closeM('m-pm-check')">ยกเลิก</button>
       <button type="submit" form="f-pm-check" class="btn btn-primary" id="pmk-btn"><i class="ti ti-device-floppy"></i>บันทึกผลตรวจ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: PM RECORD DETAIL (read-only)
+     ============================================================ -->
+<div id="m-pm-record" class="mbg" onclick="if(event.target===this)closeM('m-pm-record')">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-clipboard-check" style="color:var(--brand)"></i><span id="pmr-title">ผลตรวจ PM</span></div>
+      <button class="modal-close" onclick="closeM('m-pm-record')" aria-label="ปิด"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="pmr-meta" style="margin-bottom:14px;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:3px"></div>
+      <div class="section-divider"><span>รายการตรวจ</span></div>
+      <div id="pmr-items"></div>
+      <div id="pmr-note"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="closeM('m-pm-record')">ปิด</button>
     </div>
   </div>
 </div>
@@ -2168,6 +2191,7 @@ function renderPmDue() {
         <div class="job-row-sub">${escHtml(cl ? cl.name : '-')} · ครบกำหนด ${escHtml(s.next_due_date)}</div>
       </div>
       ${od ? '<span class="badge bh">เลยกำหนด</span>' : '<span class="badge bw">วันนี้</span>'}
+      <button class="btn btn-sm btn-icon" title="พิมพ์ใบตรวจ" onclick="event.stopPropagation();printPmSched(${s.id})"><i class="ti ti-printer"></i></button>
     </div>`;
   }).join('');
 }
@@ -2195,6 +2219,7 @@ function renderPmSchedTable() {
       <td>${s.last_checked_at ? escHtml(formatThaiDateTime(s.last_checked_at)) : '-'}</td>
       <td style="text-align:right;white-space:nowrap">
         <button class="btn btn-sm btn-icon" title="ตรวจเลย" onclick="openPmCheckForm(${s.id})"><i class="ti ti-checklist"></i></button>
+        <button class="btn btn-sm btn-icon" title="พิมพ์ใบตรวจ" onclick="printPmSched(${s.id})"><i class="ti ti-printer"></i></button>
         <button class="btn btn-sm btn-icon" title="แก้ไข" onclick="openPmSchedForm(${s.id})"><i class="ti ti-edit"></i></button>
       </td>
     </tr>`;
@@ -2228,7 +2253,7 @@ function renderPmHistory() {
     return;
   }
   el.innerHTML = G_PM_RECORDS.slice(0, 30).map(r => `
-    <div class="job-row">
+    <div class="job-row" onclick="openPmRecordDetail(${r.id})">
       <div class="job-row-id">${r.has_issue?'⚠️':'✅'}</div>
       <div class="job-row-body">
         <div class="job-row-main">${escHtml(r.machine_name)} — ${escHtml(r.checklist_name)}</div>
@@ -2435,6 +2460,117 @@ async function savePmCheck(e) {
   } finally {
     btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i>บันทึกผลตรวจ';
   }
+}
+
+// ---------- RECORD DETAIL (read-only) ----------
+function openPmRecordDetail(id) {
+  const r = G_PM_RECORDS.find(x => x.id === id);
+  if (!r) { toast('⚠️ ไม่พบข้อมูลผลตรวจ'); return; }
+  document.getElementById('pmr-title').textContent = `ผลตรวจ PM — ${r.machine_name}`;
+  document.getElementById('pmr-meta').innerHTML = `
+    <div><b style="color:var(--text)">เช็คลิสต์:</b> ${escHtml(r.checklist_name)}</div>
+    <div><b style="color:var(--text)">วันเวลาตรวจ:</b> ${escHtml(formatThaiDateTime(r.checked_at))}</div>
+    <div><b style="color:var(--text)">ผู้ตรวจ:</b> ${escHtml(r.checked_by || '-')}</div>
+  `;
+  const items = r.results || [];
+  document.getElementById('pmr-items').innerHTML = items.length ? items.map(it => `
+    <div class="pmk-item">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div class="pmk-item-txt" style="margin-bottom:0;flex:1">${escHtml(it.item)}</div>
+        <span class="badge ${it.status==='issue'?'bh':'bd'}">${it.status==='issue'?'⚠️ ต้องแก้ไข':'✅ ปกติ'}</span>
+      </div>
+      ${it.note ? `<div style="margin-top:6px;font-size:12px;color:var(--text2)">📝 ${escHtml(it.note)}</div>` : ''}
+    </div>`).join('') : '<div class="empty-state"><p>ไม่มีรายการตรวจ</p></div>';
+  document.getElementById('pmr-note').innerHTML = r.overall_note
+    ? `<div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2)">📌 ${escHtml(r.overall_note)}</div>`
+    : '';
+  openM('m-pm-record');
+}
+
+// ---------- PRINT PM SCHEDULE SHEET ----------
+function printPmSched(id) {
+  const s = G_PM_SCHEDULES.find(x => x.id === id);
+  if (!s) { toast('⚠️ ไม่พบแผนงาน PM'); return; }
+  const cl = G_PM_CHECKLISTS.find(c => c.id === s.checklist_id);
+  if (!cl) { toast('⚠️ ไม่พบเช็คลิสต์ของแผนงานนี้'); return; }
+
+  const coName = G_SETTINGS["ชื่อบริษัท"] || 'RepairDesk Pro';
+  const coDep  = G_SETTINGS["แผนก"] || 'ระบบแจ้งซ่อมและบำรุงรักษา';
+
+  const rows = (cl.items || []).map((item, i) => `
+    <tr>
+      <td style="padding:7px 6px;border-bottom:1px solid #E2E8F0;color:#334155;width:26px">${i+1}</td>
+      <td style="padding:7px 6px;border-bottom:1px solid #E2E8F0;color:#000">${escHtml(item)}</td>
+      <td style="padding:7px 6px;border-bottom:1px solid #E2E8F0;text-align:center;width:56px"><span class="pt-checkbox"></span></td>
+      <td style="padding:7px 6px;border-bottom:1px solid #E2E8F0;text-align:center;width:72px"><span class="pt-checkbox"></span></td>
+      <td style="padding:7px 6px;border-bottom:1px solid #E2E8F0;text-align:center;width:56px"><span class="pt-checkbox"></span></td>
+      <td style="padding:7px 6px;border-bottom:1px solid #E2E8F0;width:130px"></td>
+    </tr>`).join('');
+
+  const html = `
+<div class="pt-wrap">
+  <div class="pt-head">
+    <div class="pt-head-left">
+      <div class="pt-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <div>
+        <div class="pt-title">ใบตรวจ PM (Preventive Maintenance)</div>
+        <div class="pt-sub">${escHtml(coName)} · ${escHtml(coDep)}</div>
+      </div>
+    </div>
+    <div class="pt-repbox">
+      <span class="pt-rep-lbl">เครื่องจักร</span>
+      <div class="pt-rep-val" style="font-size:15px">${escHtml(s.machine_name)}</div>
+      <div class="pt-rep-date">ความถี่: <b>${pmFreqLabel(s.frequency)}</b> · ครบกำหนด: <b>${escHtml(s.next_due_date||'-')}</b></div>
+    </div>
+  </div>
+
+  <div style="padding:18px 26px">
+    <div style="display:flex;gap:28px;margin-bottom:16px;font-size:12px;color:#000">
+      <div>วันที่ตรวจ: <b>___/___/______</b></div>
+      <div>ผู้ตรวจ: <b>.......................................</b></div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:8px">เช็คลิสต์: ${escHtml(cl.name)}</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="border-bottom:2px solid #0F172A;color:#334155">
+          <th style="padding:7px 6px;text-align:left">#</th>
+          <th style="padding:7px 6px;text-align:left">รายการตรวจ</th>
+          <th style="padding:7px 6px;text-align:center">ปกติ</th>
+          <th style="padding:7px 6px;text-align:center">แก้ไข<br>ใช้งานได้</th>
+          <th style="padding:7px 6px;text-align:center">รอซ่อม</th>
+          <th style="padding:7px 6px;text-align:left">หมายเหตุ</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>
+
+  <div class="pt-sign">
+    <div class="pt-sig">
+      <div class="pt-sig-line"></div>
+      <div class="pt-sig-name">( ................................ )</div>
+      <div class="pt-sig-role">ผู้ตรวจเช็ค (ช่างซ่อมบำรุง)</div>
+    </div>
+    <div class="pt-sig">
+      <div class="pt-sig-line"></div>
+      <div class="pt-sig-name">( ................................ )</div>
+      <div class="pt-sig-role">ผู้ตรวจสอบ (หัวหน้างาน)</div>
+    </div>
+  </div>
+</div>
+
+<div class="pt-actions">
+  <button class="btn btn-primary" onclick="window.print()">
+    <i class="ti ti-printer"></i> พิมพ์ใบตรวจ PM
+  </button>
+  <button class="btn" onclick="closePrintTicket()">ปิดหน้าต่าง</button>
+</div>`;
+
+  document.getElementById('print-ticket').innerHTML = html;
+  document.body.classList.add('print-mode-ticket');
+  window.scrollTo(0,0);
 }
 
 // ============================================================
