@@ -180,8 +180,10 @@ create policy "public full access" on jobs
   for all using (true) with check (true);
 
 drop policy if exists "public read/insert" on job_timeline;
-create policy "public read/insert" on job_timeline
+drop policy if exists "public select" on job_timeline;
+create policy "public select" on job_timeline
   for select using (true);
+drop policy if exists "public insert" on job_timeline;
 create policy "public insert" on job_timeline
   for insert with check (true);
 
