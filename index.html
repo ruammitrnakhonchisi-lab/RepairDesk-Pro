@@ -665,6 +665,12 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
         <i class="ti ti-checklist"></i> PM เครื่องจักร
         <span class="badge-num red" id="nav-pm-count" style="display:none">0</span>
       </button>
+      <button class="nb" id="nav-pmreport" onclick="go('pmreport',this)" aria-label="ประวัติ/รายงาน PM">
+        <i class="ti ti-history"></i> ประวัติ/รายงาน PM
+      </button>
+      <button class="nb" id="nav-pmchecklist" onclick="go('pmchecklist',this)" aria-label="เช็คลิสต์ PM">
+        <i class="ti ti-clipboard-list"></i> เช็คลิสต์ PM
+      </button>
       <button class="nb" id="nav-rep" onclick="go('rep',this)" aria-label="รายงานสรุป">
         <i class="ti ti-chart-bar"></i> รายงานสรุป
       </button>
@@ -819,15 +825,12 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
           </div>
           <div id="pm-sched-body"></div>
         </div>
+      </div>
+    </div>
 
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><i class="ti ti-clipboard-list"></i>เช็คลิสต์แม่แบบ</div>
-            <button class="btn" onclick="openPmChecklistForm()"><i class="ti ti-plus"></i> เพิ่มเช็คลิสต์</button>
-          </div>
-          <div id="pm-checklist-list"></div>
-        </div>
-
+    <!-- ===== PM HISTORY + REPORT PAGE ===== -->
+    <div id="p-pmreport" class="page">
+      <div class="page-inner">
         <div class="card">
           <div class="card-header">
             <div class="card-title"><i class="ti ti-history"></i>ประวัติการตรวจ PM</div>
@@ -861,6 +864,19 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
           <div style="font-size:12px;font-weight:600;color:var(--brand);margin:2px 0 14px" id="pmrep-period-label"></div>
           <div id="pmrep-met" class="metrics" style="margin-bottom:16px"></div>
           <div id="pmrep-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PM CHECKLIST TEMPLATES PAGE ===== -->
+    <div id="p-pmchecklist" class="page">
+      <div class="page-inner">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="ti ti-clipboard-list"></i>เช็คลิสต์แม่แบบ</div>
+            <button class="btn btn-primary" onclick="openPmChecklistForm()"><i class="ti ti-plus"></i> เพิ่มเช็คลิสต์</button>
+          </div>
+          <div id="pm-checklist-list"></div>
         </div>
       </div>
     </div>
@@ -1672,11 +1688,11 @@ function go(p, btn) {
   document.querySelectorAll('.nb').forEach(x => x.classList.remove('on'));
   document.getElementById('p-' + p).classList.add('on');
   btn.classList.add('on');
-  const titles = {dash:'แดชบอร์ด', jobs:'รายการซ่อม', rep:'รายงานสรุป', techs:'ทีมช่าง', mach:'เครื่องจักร / ยานพาหนะ', pm:'PM เครื่องจักร', set:'ตั้งค่า'};
+  const titles = {dash:'แดชบอร์ด', jobs:'รายการซ่อม', rep:'รายงานสรุป', techs:'ทีมช่าง', mach:'เครื่องจักร / ยานพาหนะ', pm:'PM เครื่องจักร', pmreport:'ประวัติ/รายงาน PM', pmchecklist:'เช็คลิสต์ PM', set:'ตั้งค่า'};
   document.getElementById('topbar-title').textContent = titles[p] || '';
   if (p === 'rep') renderReports();
   if (p === 'set') populateSettingsForm();
-  if (p === 'pm') renderPm();
+  if (p === 'pm' || p === 'pmreport' || p === 'pmchecklist') renderPm();
   closeSidebar();
   window.scrollTo(0,0);
 }
