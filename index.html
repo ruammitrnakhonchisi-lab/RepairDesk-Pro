@@ -506,6 +506,19 @@ kbd{background:var(--surface2);padding:2px 8px;border-radius:5px;border:1px soli
   .metrics{grid-template-columns:1fr 1fr}
   .sb-logo-text{font-size:14px}
 }
+
+/* ============================================================
+   PM-ONLY MODE — for a link (index.html?mode=pm) given to
+   technicians who should only see the PM due-list, not the rest
+   of the back-office app. Not real access control (anyone who
+   changes the URL can still reach everything) — just removes the
+   navigation so it isn't in the way.
+   ============================================================ */
+body.pm-only-mode .sidebar{display:none}
+body.pm-only-mode .hamburger{display:none}
+body.pm-only-mode #pm-sched-card{display:none}
+body.pm-only-mode #btn-new-job{display:none}
+
 /* Version marker — used to confirm deployment is up-to-date */
 .ver-badge{
   position:fixed;bottom:6px;right:8px;z-index:9999;
@@ -829,7 +842,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
           <div id="pm-due-list"></div>
         </div>
 
-        <div class="card" style="padding:0">
+        <div class="card" id="pm-sched-card" style="padding:0">
           <div class="card-header pm-sched-toggle" style="padding:16px 20px;cursor:pointer" onclick="togglePmSchedSection()">
             <div class="card-title"><i class="ti ti-calendar-event"></i>แผนงาน PM ทั้งหมด (สำหรับตั้งค่า)</div>
             <i class="ti ti-chevron-down" id="pm-sched-toggle-icon"></i>
@@ -1644,6 +1657,7 @@ function afterLoad(connText) {
   else pmEl.style.display = 'none';
   populateFilters(); renderDash(); renderJobs(); renderTechs(); renderMachines();
   populateSettingsForm();
+  if (isPmOnlyMode()) go('pm', document.getElementById('nav-pm'));
 }
 
 async function reloadJobs(connText) {
@@ -3490,11 +3504,16 @@ document.addEventListener('keydown', function(e){
 // ============================================================
 //  STARTUP
 // ============================================================
+function isPmOnlyMode() {
+  return new URLSearchParams(location.search).get('mode') === 'pm';
+}
+
 (function onStartup(){
   try {
     const saved = localStorage.getItem('rd_theme');
     if (saved) applyTheme(saved);
   } catch(e){}
+  if (isPmOnlyMode()) document.body.classList.add('pm-only-mode');
 })();
 window.addEventListener('load', init);
 </script>
