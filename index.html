@@ -838,6 +838,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
         <div class="card">
           <div class="card-header">
             <div class="card-title"><i class="ti ti-alert-triangle"></i>รายการที่ต้องตรวจ</div>
+            <button class="btn btn-primary" onclick="copyPmDueMessage()"><i class="ti ti-copy"></i> คัดลอกข้อความแจ้งช่าง</button>
           </div>
           <div id="pm-due-list"></div>
         </div>
@@ -1285,6 +1286,25 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
     </div>
     <div class="modal-footer">
       <button type="button" class="btn" onclick="closeM('m-pm-record')">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: PM DUE MESSAGE (clipboard-copy fallback)
+     ============================================================ -->
+<div id="m-pm-msg" class="mbg" onclick="if(event.target===this)closeM('m-pm-msg')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-copy" style="color:var(--brand)"></i><span>ข้อความแจ้งช่าง</span></div>
+      <button class="modal-close" onclick="closeM('m-pm-msg')" aria-label="ปิด"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px">คัดลอกอัตโนมัติไม่สำเร็จ — แตะข้อความด้านล่างเพื่อเลือกทั้งหมด แล้วคัดลอกเอง (Ctrl+C หรือกดค้างแล้วเลือก "คัดลอก")</p>
+      <textarea id="pm-msg-text" readonly rows="12" style="width:100%;font-family:'Prompt',sans-serif;font-size:13px;padding:10px 12px;border:1px solid var(--border2);border-radius:var(--rad);background:var(--surface);color:var(--text);resize:vertical" onclick="this.select()"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" onclick="closeM('m-pm-msg')">ปิด</button>
     </div>
   </div>
 </div>
@@ -2299,6 +2319,37 @@ function renderPmDue() {
       </div>
     </div>`;
   }).join('');
+}
+
+function buildPmDueMessage() {
+  const today = todayStr();
+  const due = pmDueSchedules().sort((a,b) => a.next_due_date.localeCompare(b.next_due_date));
+  const overdue = due.filter(s => s.next_due_date < today);
+  const dueToday = due.filter(s => s.next_due_date === today);
+  const line = s => {
+    const cl = G_PM_CHECKLISTS.find(c => c.id === s.checklist_id);
+    return `• ${s.machine_name}${cl ? ' (' + cl.name + ')' : ''}`;
+  };
+  const dateLabel = new Date().toLocaleDateString('th-TH', { day:'numeric', month:'long', year:'numeric' });
+
+  let msg = `📋 รายการตรวจ PM ประจำวันที่ ${dateLabel}`;
+  if (!due.length) return msg + `\n\nวันนี้ไม่มีเครื่องจักรที่ต้องตรวจ PM ✅`;
+  if (overdue.length) msg += `\n\n⚠️ เลยกำหนด (${overdue.length})\n` + overdue.map(line).join('\n');
+  if (dueToday.length) msg += `\n\n🔧 ครบกำหนดวันนี้ (${dueToday.length})\n` + dueToday.map(line).join('\n');
+  msg += `\n\nรวม ${due.length} รายการ`;
+  return msg;
+}
+
+async function copyPmDueMessage() {
+  const msg = buildPmDueMessage();
+  try {
+    await navigator.clipboard.writeText(msg);
+    toast('📋 คัดลอกข้อความแล้ว วางในไลน์กลุ่มได้เลย');
+  } catch (e) {
+    document.getElementById('pm-msg-text').value = msg;
+    openM('m-pm-msg');
+    setTimeout(() => document.getElementById('pm-msg-text').select(), 100);
+  }
 }
 
 function togglePmSchedSection() {
