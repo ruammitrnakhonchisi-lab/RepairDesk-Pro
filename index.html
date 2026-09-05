@@ -3385,7 +3385,7 @@ function printReport() {
       <td>${escHtml(j["รายละเอียดปัญหา"]||'-')}</td>
       <td style="text-align:center">${escHtml(j["ช่างผู้รับผิดชอบ"]||'-')}</td>
       <td style="text-align:center"><span style="padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:${stBg[j["สถานะ"]]||'#F3F4F6'};color:${stColor[j["สถานะ"]]||'#6B7280'}">${escHtml(j["สถานะ"]||'-')}</span></td>
-      <td style="text-align:right">${j["ค่าใช้จ่าย"] ? parseFloat(j["ค่าใช้จ่าย"]).toLocaleString('th-TH')+'฿' : '-'}</td>
+      <td>${escHtml(j["วิธีการแก้ไข"]||'-')}</td>
     </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;color:#94A3B8;padding:20px">ไม่มีข้อมูลงานซ่อมในงวดนี้</td></tr>`;
 
   const printWindow = window.open('','_blank','width=1100,height=750');
@@ -3437,7 +3437,7 @@ tr:hover td{background:#EBF2FD}
 </div>
 <table>
   <thead><tr>
-    <th>รหัส</th><th>วันที่แจ้ง</th><th>เครื่องจักร / ทะเบียน</th><th>ผู้แจ้ง</th><th>รายละเอียดปัญหา</th><th>ช่าง</th><th style="text-align:center">สถานะ</th><th style="text-align:right">ค่าใช้จ่าย</th>
+    <th>รหัส</th><th>วันที่แจ้ง</th><th>เครื่องจักร / ทะเบียน</th><th>ผู้แจ้ง</th><th>รายละเอียดปัญหา</th><th>ช่าง</th><th style="text-align:center">สถานะ</th><th>วิธีการแก้ไข / สรุปการซ่อม</th>
   </tr></thead>
   <tbody>${rows}</tbody>
 </table>
