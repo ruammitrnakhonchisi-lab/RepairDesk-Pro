@@ -439,6 +439,15 @@ button:focus-visible,.btn:focus-visible,.nb:focus-visible{outline:2px solid var(
 .pmc-row-name{font-weight:600;font-size:13px;color:var(--text)}
 .pmc-row-items{font-size:11.5px;color:var(--text3);margin-top:3px}
 
+/* PM open-issues list (from the "พบปัญหา" metric) */
+.pm-issue-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.pm-issue-row:last-child{border-bottom:none}
+.pm-issue-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+@media(max-width:480px){
+  .pm-issue-actions{flex-direction:row;flex-basis:100%}
+  .pm-issue-actions .btn{flex:1}
+}
+
 /* PM due-list action buttons — big enough to tap comfortably on a phone */
 .pm-due-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
 .pm-due-check-btn{padding:12px 20px;font-size:14px;font-weight:700;min-height:46px}
@@ -1305,6 +1314,24 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-primary" onclick="closeM('m-pm-msg')">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: PM OPEN ISSUES LIST
+     ============================================================ -->
+<div id="m-pm-issues" class="mbg" onclick="if(event.target===this)closeM('m-pm-issues')">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-clipboard-x" style="color:var(--c-hi)"></i><span>ปัญหาที่พบจาก PM (ยังไม่แก้ไข)</span></div>
+      <button class="modal-close" onclick="closeM('m-pm-issues')" aria-label="ปิด"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="pm-issues-list"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="closeM('m-pm-issues')">ปิด</button>
     </div>
   </div>
 </div>
@@ -2289,7 +2316,7 @@ function renderPmMetrics() {
     <div class="met red"><i class="ti ti-alert-triangle met-icon"></i><span class="met-val">${overdue}</span><span class="met-lbl">เลยกำหนด</span></div>
     <div class="met orange"><i class="ti ti-clock met-icon"></i><span class="met-val">${dueToday}</span><span class="met-lbl">ครบกำหนดวันนี้</span></div>
     <div class="met blue"><i class="ti ti-calendar-event met-icon"></i><span class="met-val">${active.length}</span><span class="met-lbl">แผนงานทั้งหมด</span></div>
-    <div class="met teal"><i class="ti ti-clipboard-x met-icon"></i><span class="met-val">${issues}</span><span class="met-lbl">พบปัญหา (สะสม)</span></div>
+    <div class="met teal" style="cursor:pointer" onclick="openPmIssuesList()" title="กดดูรายละเอียด"><i class="ti ti-clipboard-x met-icon"></i><span class="met-val">${issues}</span><span class="met-lbl">พบปัญหา (สะสม)</span></div>
   `;
 }
 
@@ -2672,10 +2699,64 @@ async function resolvePmItem(recordId, idx) {
     r.results = results; r.has_issue = hasIssue;
     openPmRecordDetail(recordId);
     renderPmHistory(); renderPmMetrics(); renderPmReport();
+    if (document.getElementById('m-pm-issues').classList.contains('on')) renderPmIssuesList();
     toast('✅ อัปเดตสถานะเป็นแก้ไขแล้ว');
   } catch(err) {
     Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
   }
+}
+
+// ---------- OPEN ISSUES LIST (from the "พบปัญหา" metric) ----------
+function pmOpenIssuesArray() {
+  const issues = [];
+  G_PM_RECORDS.forEach(r => {
+    (r.results || []).forEach(it => {
+      if (it.status === 'issue') issues.push({ recordId: r.id, machine_name: r.machine_name, checked_at: r.checked_at, item: it.item, note: it.note });
+    });
+  });
+  return issues.sort((a,b) => new Date(b.checked_at) - new Date(a.checked_at));
+}
+
+function openPmIssuesList() {
+  renderPmIssuesList();
+  openM('m-pm-issues');
+}
+
+function renderPmIssuesList() {
+  const el = document.getElementById('pm-issues-list');
+  const issues = pmOpenIssuesArray();
+  if (!issues.length) {
+    el.innerHTML = '<div class="empty-state"><i class="ti ti-mood-happy"></i><p>ไม่มีปัญหาที่ค้างอยู่</p></div>';
+    return;
+  }
+  el.innerHTML = issues.map(is => {
+    const desc = is.item + (is.note ? ' - ' + is.note : '');
+    return `
+    <div class="pm-issue-row">
+      <div style="flex:1;min-width:0">
+        <div class="pmc-row-name">${escHtml(is.machine_name)}</div>
+        <div style="font-size:12.5px;color:var(--text2);margin-top:3px">${escHtml(is.item)}</div>
+        ${is.note ? `<div style="font-size:12px;color:var(--text3);margin-top:2px">📝 ${escHtml(is.note)}</div>` : ''}
+        <div class="pmc-row-items" style="margin-top:4px">${escHtml(formatThaiDateTime(is.checked_at))}</div>
+      </div>
+      <div class="pm-issue-actions">
+        <button class="btn btn-sm" onclick="openPmRecordDetail(${is.recordId})"><i class="ti ti-eye"></i> ดูรายละเอียด</button>
+        <button class="btn btn-sm btn-primary" onclick="createJobFromPmIssue('${escAttr(is.machine_name)}','${escAttr(desc)}')"><i class="ti ti-clipboard-plus"></i> ออกใบแจ้งซ่อม</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function createJobFromPmIssue(machineName, description) {
+  closeM('m-pm-issues');
+  closeM('m-pm-record');
+  openJobForm();
+  const mcSel = document.getElementById('fj-mc');
+  mcSel.value = machineName;
+  syncMachineCategory();
+  document.getElementById('fj-det').value = 'พบจากการตรวจ PM: ' + description;
+  document.getElementById('fj-ug').value = 'สูง';
+  toast('📋 ดึงข้อมูลจากผลตรวจ PM มาเติมให้แล้ว ตรวจสอบและบันทึกได้เลย');
 }
 
 // ---------- PRINT PM SCHEDULE SHEET ----------
