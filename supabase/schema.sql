@@ -22,8 +22,10 @@ create table if not exists techs (
   phone       text,
   skill       text,
   status      text not null default 'ใช้งาน',
+  photo       text, -- data: URI (resized/compressed client-side before save)
   created_at  timestamptz not null default now()
 );
+alter table techs add column if not exists photo text;
 
 create or replace function set_tech_code()
 returns trigger language plpgsql as $$

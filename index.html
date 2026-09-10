@@ -358,8 +358,17 @@ button:focus-visible,.btn:focus-visible,.nb:focus-visible{outline:2px solid var(
 .tech-avatar{
   width:46px;height:46px;border-radius:12px;
   background:linear-gradient(135deg,var(--brand),var(--brand-dark));
+  background-size:cover;background-position:center;
   color:#fff;font-size:18px;font-weight:700;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.tech-avatar-lg{
+  width:84px;height:84px;border-radius:16px;
+  background:linear-gradient(135deg,var(--brand),var(--brand-dark));
+  background-size:cover;background-position:center;
+  color:#fff;font-size:30px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  border:2px solid var(--border2);
 }
 .tech-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
 .tech-skill{font-size:11px;color:var(--text3)}
@@ -1131,6 +1140,15 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
     <div class="modal-body">
       <form id="f-tech" onsubmit="saveTech(event)">
         <input type="hidden" id="ft-id">
+        <input type="hidden" id="ft-photo">
+        <div class="field" style="text-align:center">
+          <div id="ft-photo-preview" class="tech-avatar-lg" style="margin:0 auto 10px;cursor:pointer" onclick="document.getElementById('ft-photo-input').click()">?</div>
+          <input type="file" id="ft-photo-input" accept="image/*" style="display:none" onchange="handleTechPhotoSelect(event)">
+          <div style="display:flex;gap:8px;justify-content:center">
+            <button type="button" class="btn btn-sm" onclick="document.getElementById('ft-photo-input').click()"><i class="ti ti-camera"></i> เลือกรูป</button>
+            <button type="button" class="btn btn-sm" id="ft-photo-remove-btn" style="display:none" onclick="removeTechPhoto()"><i class="ti ti-trash"></i> ลบรูป</button>
+          </div>
+        </div>
         <div class="field"><label>ชื่อช่าง *</label><input id="ft-nm" placeholder="ชื่อ-นามสกุล" required></div>
         <div class="field"><label>เบอร์โทร</label><input id="ft-ph" placeholder="0XX-XXX-XXXX" type="tel"></div>
         <div class="field"><label>ความเชี่ยวชาญ</label><input id="ft-sk" placeholder="เช่น ไฟฟ้า, เครื่องกล, ท่อ..."></div>
@@ -1415,6 +1433,7 @@ function techToObj(r) {
     "เบอร์โทร": r.phone || '',
     "ความเชี่ยวชาญ": r.skill || '',
     "สถานะ": r.status || 'ใช้งาน',
+    "รูปภาพ": r.photo || '',
   };
 }
 
@@ -1424,6 +1443,7 @@ function techFromObj(data) {
     phone: data["เบอร์โทร"] || null,
     skill: data["ความเชี่ยวชาญ"] || null,
     status: data["สถานะ"] || 'ใช้งาน',
+    photo: data["รูปภาพ"] || null,
   };
 }
 
@@ -3033,9 +3053,10 @@ function renderTechs() {
   container.innerHTML = G_TECHS.map(t => {
     const initial = (t["ชื่อช่าง"]||'?').charAt(0).toUpperCase();
     const jobCount = G_JOBS.filter(j => j["ช่างผู้รับผิดชอบ"] === t["ชื่อช่าง"] && !['เสร็จสิ้น','ยกเลิก'].includes(j["สถานะ"])).length;
+    const photo = t["รูปภาพ"];
     return `
     <div class="tech-card">
-      <div class="tech-avatar">${escHtml(initial)}</div>
+      <div class="tech-avatar"${photo ? ` style="background-image:url('${escAttr(photo)}')"` : ''}>${photo ? '' : escHtml(initial)}</div>
       <div style="flex:1;min-width:0">
         <div class="tech-name">${escHtml(t["ชื่อช่าง"]||'')}</div>
         <div class="tech-skill">${escHtml(t["ความเชี่ยวชาญ"]||'ทั่วไป')}</div>
@@ -3201,7 +3222,59 @@ function openTechForm(id = null) {
     document.getElementById('ft-sk').value = t["ความเชี่ยวชาญ"]||'';
     document.getElementById('ft-st').value = t["สถานะ"]||'ใช้งาน';
   }
+  document.getElementById('ft-photo').value = (t && t["รูปภาพ"]) || '';
+  setTechPhotoPreview((t && t["รูปภาพ"]) || '', (t && t["ชื่อช่าง"]) || '');
   openM('m-tech');
+}
+
+function setTechPhotoPreview(photo, name) {
+  const preview = document.getElementById('ft-photo-preview');
+  const removeBtn = document.getElementById('ft-photo-remove-btn');
+  if (photo) {
+    preview.style.backgroundImage = `url('${photo}')`;
+    preview.textContent = '';
+    removeBtn.style.display = 'inline-flex';
+  } else {
+    preview.style.backgroundImage = '';
+    preview.textContent = (name || '?').charAt(0).toUpperCase();
+    removeBtn.style.display = 'none';
+  }
+}
+
+function resizeImageFile(file, maxDim = 300, quality = 0.7) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('อ่านไฟล์รูปไม่สำเร็จ'));
+    reader.onload = () => { img.onerror = () => reject(new Error('ไฟล์นี้ไม่ใช่รูปภาพ')); img.onload = () => {
+      let { width, height } = img;
+      if (width > height && width > maxDim) { height = Math.round(height * maxDim / width); width = maxDim; }
+      else if (height > maxDim) { width = Math.round(width * maxDim / height); height = maxDim; }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    }; img.src = reader.result; };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleTechPhotoSelect(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  try {
+    const dataUrl = await resizeImageFile(file);
+    document.getElementById('ft-photo').value = dataUrl;
+    setTechPhotoPreview(dataUrl);
+  } catch (err) {
+    Swal.fire({icon:'error', title:'เกิดข้อผิดพลาด', text: err.message});
+  }
+}
+
+function removeTechPhoto() {
+  document.getElementById('ft-photo').value = '';
+  setTechPhotoPreview('', document.getElementById('ft-nm').value);
 }
 
 async function saveTech(e) {
@@ -3212,6 +3285,7 @@ async function saveTech(e) {
     "เบอร์โทร":       document.getElementById('ft-ph').value.trim(),
     "ความเชี่ยวชาญ": document.getElementById('ft-sk').value.trim(),
     "สถานะ":          id ? document.getElementById('ft-st').value : 'ใช้งาน',
+    "รูปภาพ":         document.getElementById('ft-photo').value,
   };
   const btn = document.getElementById('ft-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
