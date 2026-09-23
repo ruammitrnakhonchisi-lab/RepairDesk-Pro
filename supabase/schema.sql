@@ -213,7 +213,7 @@ create table if not exists pm_checklists (
 -- ---------- PER-MACHINE SCHEDULE ----------
 create table if not exists pm_schedules (
   id               bigint generated always as identity primary key,
-  machine_name     text not null references machines(name) on delete cascade,
+  machine_name     text not null references machines(name) on update cascade on delete cascade,
   checklist_id     bigint not null references pm_checklists(id) on delete restrict,
   frequency        text not null check (frequency in ('daily','weekly','monthly')),
   next_due_date    date not null default current_date,
@@ -221,6 +221,13 @@ create table if not exists pm_schedules (
   active           boolean not null default true,
   created_at       timestamptz not null default now()
 );
+
+-- the original FK was missing ON UPDATE CASCADE, so renaming a machine
+-- (which updates machines.name) was blocked by any PM schedule pointing
+-- at the old name — recreate it with cascade so renames flow through.
+alter table pm_schedules drop constraint if exists pm_schedules_machine_name_fkey;
+alter table pm_schedules add constraint pm_schedules_machine_name_fkey
+  foreign key (machine_name) references machines(name) on update cascade on delete cascade;
 
 create index if not exists idx_pm_schedules_machine on pm_schedules(machine_name);
 
