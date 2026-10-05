@@ -612,6 +612,24 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
 
 .pt-actions{max-width:800px;margin:20px auto 0;text-align:center;display:flex;justify-content:center;gap:12px}
 
+/* PM result form — mirrors the paper "Preventive Maintenance Checklist" sheet so printouts can be filed alongside it */
+.pmf-wrap{max-width:800px;margin:0 auto;background:#fff;padding:26px 28px;border-radius:16px;box-shadow:0 8px 32px rgba(15,23,42,.12);color:#000;font-size:13px}
+.pmf-top{display:flex;justify-content:space-between;align-items:stretch;gap:12px}
+.pmf-co{font-size:15px;font-weight:700}
+.pmf-title{font-size:19px;font-weight:700;margin-top:2px}
+.pmf-month{border:1.3px solid #000;padding:6px 16px;font-size:15px;font-weight:700;display:flex;align-items:center;white-space:nowrap}
+.pmf-mach{font-size:14px;font-weight:600;margin:8px 0 4px}
+.pmf-info{display:flex;flex-wrap:wrap;gap:4px 26px;font-size:12.5px;margin-bottom:8px}
+.pmf-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.pmf-table th,.pmf-table td{border:1.3px solid #000;padding:7px 8px;vertical-align:middle}
+.pmf-table th{font-weight:700;text-align:center;background:#F1F5F9}
+.pmf-table td.c{text-align:center}
+.pmf-table td.tick{text-align:center;font-size:16px;font-weight:700;line-height:1}
+.pmf-extra{border:1.3px solid #000;border-top:none;padding:7px 8px;min-height:22mm;font-size:12.5px;white-space:pre-wrap}
+.pmf-sign{display:flex;justify-content:space-around;margin-top:14mm}
+.pmf-sig{text-align:center;width:40%;font-size:12.5px}
+.pmf-sig-line{border-bottom:1.3px dotted #000;height:8mm;display:flex;align-items:flex-end;justify-content:center;padding-bottom:1mm}
+
 @media(max-width:640px){
   .pt-body{grid-template-columns:1fr}
   .pt-col-left{border-right:none;border-bottom:1px solid #E2E8F0}
@@ -622,6 +640,10 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
   @page{size:A4 portrait;margin:10mm}
   body.print-mode-ticket #print-ticket{background:#fff;padding:0}
   .pt-actions{display:none}
+  .pmf-wrap{max-width:190mm;width:190mm;margin:0;padding:0;border-radius:0;box-shadow:none}
+  .pmf-table th{background:#fff}
+  .pmf-table tr{break-inside:avoid}
+  .pmf-sign{break-inside:avoid}
 
   /* Compact layout so the whole ticket fits in the top half of an A4 portrait page */
   .pt-wrap{
@@ -1316,6 +1338,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
       <div id="pmr-note"></div>
     </div>
     <div class="modal-footer">
+      <button type="button" class="btn btn-primary" id="pmr-print"><i class="ti ti-printer"></i> พิมพ์เก็บเข้าแฟ้ม</button>
       <button type="button" class="btn" onclick="closeM('m-pm-record')">ปิด</button>
     </div>
   </div>
@@ -2742,7 +2765,84 @@ function openPmRecordDetail(id) {
   document.getElementById('pmr-note').innerHTML = r.overall_note
     ? `<div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2)">📌 ${escHtml(r.overall_note)}</div>`
     : '';
+  document.getElementById('pmr-print').onclick = () => printPmRecord(r.id);
   openM('m-pm-record');
+}
+
+// ---------- PRINT PM RESULT (filing copy, same layout as the paper PM checklist) ----------
+function printPmRecord(id) {
+  const r = G_PM_RECORDS.find(x => x.id === id);
+  if (!r) { toast('⚠️ ไม่พบข้อมูลผลตรวจ'); return; }
+  const coName = G_SETTINGS["ชื่อบริษัท"] || 'RepairDesk Pro';
+  const monthLbl = r.checked_at
+    ? new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', month: 'long', year: 'numeric' }).format(new Date(r.checked_at))
+    : '';
+  const tick = on => `<td class="tick">${on ? '✓' : ''}</td>`;
+  const items = r.results || [];
+  const rows = items.map((it, i) => `
+    <tr>
+      <td class="c">${i+1}</td>
+      <td>${escHtml(it.item)}</td>
+      ${tick(it.status !== 'issue' && it.status !== 'resolved')}
+      ${tick(it.status === 'resolved')}
+      ${tick(it.status === 'issue')}
+      <td>${escHtml(it.note || '')}</td>
+    </tr>`).join('') || '<tr><td colspan="6" class="c">ไม่มีรายการตรวจ</td></tr>';
+
+  const html = `
+<div class="pmf-wrap">
+  <div class="pmf-top">
+    <div>
+      <div class="pmf-co">${escHtml(coName)}</div>
+      <div class="pmf-title">Preventive Maintenance Checklist</div>
+    </div>
+    <div class="pmf-month">${escHtml(monthLbl)}</div>
+  </div>
+  <div class="pmf-mach">เครื่องจักร: ${escHtml(r.machine_name)}</div>
+  <div class="pmf-info">
+    <div>เช็คลิสต์: <b>${escHtml(r.checklist_name || '-')}</b></div>
+    <div>วันเวลาตรวจ: <b>${escHtml(formatThaiDateTime(r.checked_at))}</b></div>
+    <div>ผู้ตรวจ: <b>${escHtml(r.checked_by || '-')}</b></div>
+  </div>
+  <table class="pmf-table">
+    <thead>
+      <tr>
+        <th style="width:42px">ลำดับ</th>
+        <th>รายการ</th>
+        <th style="width:58px">สภาพดี</th>
+        <th style="width:64px">แก้ไข<br>ใช้งานได้</th>
+        <th style="width:58px">รอซ่อม</th>
+        <th style="width:27%">รายการการแก้ไข</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="pmf-extra"><b>เพิ่มเติม</b>  ${escHtml(r.overall_note || '')}</div>
+  <div class="pmf-sign">
+    <div class="pmf-sig">
+      <div class="pmf-sig-line">${escHtml(r.checked_by || '')}</div>
+      <div>ผู้ตรวจเช็ค</div>
+      <div>(ช่างซ่อมบำรุง)</div>
+    </div>
+    <div class="pmf-sig">
+      <div class="pmf-sig-line"></div>
+      <div>ผู้ตรวจสอบ</div>
+      <div>(หัวหน้างาน)</div>
+    </div>
+  </div>
+</div>
+
+<div class="pt-actions">
+  <button class="btn btn-primary" onclick="window.print()">
+    <i class="ti ti-printer"></i> พิมพ์ผลตรวจ PM
+  </button>
+  <button class="btn" onclick="closePrintTicket()">ปิดหน้าต่าง</button>
+</div>`;
+
+  closeM('m-pm-record');
+  document.getElementById('print-ticket').innerHTML = html;
+  document.body.classList.add('print-mode-ticket');
+  window.scrollTo(0,0);
 }
 
 async function resolvePmItem(recordId, idx) {
@@ -3601,6 +3701,7 @@ table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:10.5px}
 thead tr{background:#1D6EDB;color:#fff}
 th{padding:8px 10px;text-align:left;font-weight:600;font-size:10px;letter-spacing:.3px}
 td{border-bottom:1px solid #E2E8F0;padding:7px 10px}
+th:nth-child(1),td:nth-child(1),th:nth-child(2),td:nth-child(2),th:nth-child(7),td:nth-child(7),td:nth-child(7) *{white-space:nowrap}
 tr:nth-child(even) td{background:#F8FAFC}
 tr:hover td{background:#EBF2FD}
 .footer{display:flex;justify-content:space-between;font-size:10px;color:#94A3B8;border-top:1px solid #E2E8F0;padding-top:8px;margin-top:10px}
