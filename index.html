@@ -616,6 +616,12 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
 /* PM result form — mirrors the paper "Preventive Maintenance Checklist" sheet so printouts can be filed alongside it */
 .pmf-wrap{max-width:1040px;margin:0 auto;background:#fff;padding:26px 28px;border-radius:16px;box-shadow:0 8px 32px rgba(15,23,42,.12);color:#000;font-size:13px}
 .pmf-wrap.pmf-portrait{max-width:800px}
+/* tighter rows so a 15-item crane sheet stays on one A4 portrait page */
+.pmf-portrait .pmf-table{font-size:12px}
+.pmf-portrait .pmf-table th,.pmf-portrait .pmf-table td{padding:4px 7px}
+.pmf-portrait .pmf-extra{min-height:14mm}
+.pmf-portrait .pmf-sign{margin-top:8mm}
+.pmf-table tr.pmf-sec td{font-weight:700;background:#F1F5F9}
 .pmf-top{display:flex;justify-content:space-between;align-items:stretch;gap:12px}
 .pmf-brand{display:flex;align-items:center;gap:12px}
 .pmf-logo{height:48px;width:auto}
@@ -646,7 +652,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
   .pt-actions{display:none}
   .pmf-wrap{max-width:277mm;width:277mm;margin:0;padding:0;border-radius:0;box-shadow:none}
   .pmf-wrap.pmf-portrait{max-width:190mm;width:190mm}
-  .pmf-table th{background:#fff}
+  .pmf-table th,.pmf-table tr.pmf-sec td{background:#fff}
   .pmf-table tr{break-inside:avoid}
   .pmf-sign{break-inside:avoid}
 
@@ -2791,15 +2797,24 @@ function printPmRecord(id) {
   const portrait = ((r.checklist_name || '') + (r.machine_name || '')).includes('เครน');
   const tick = on => `<td class="tick">${on ? '✓' : ''}</td>`;
   const items = r.results || [];
-  const rows = items.map((it, i) => `
+  // Items named "[หมวด] รายการ" become one section row per group, as on the paper sheet
+  let lastSec = null;
+  const rows = items.map((it, i) => {
+    const txt = it.item || '';
+    const end = txt.startsWith('[') ? txt.indexOf(']') : -1;
+    const m = end > 1 && txt.slice(end + 1).trim() ? [txt, txt.slice(1, end), txt.slice(end + 1).trim()] : null;
+    const secRow = m && m[1] !== lastSec ? `<tr class="pmf-sec"><td colspan="6">${escHtml(m[1])}</td></tr>` : '';
+    lastSec = m ? m[1] : null;
+    return `${secRow}
     <tr>
       <td class="c">${i+1}</td>
-      <td>${escHtml(it.item)}</td>
+      <td>${escHtml(m ? m[2] : it.item)}</td>
       ${tick(it.status !== 'issue' && it.status !== 'resolved')}
       ${tick(it.status === 'resolved')}
       ${tick(it.status === 'issue')}
       <td>${escHtml(it.note || '')}</td>
-    </tr>`).join('') || '<tr><td colspan="6" class="c">ไม่มีรายการตรวจ</td></tr>';
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" class="c">ไม่มีรายการตรวจ</td></tr>';
 
   const html = `
 <style>@page{size:A4 ${portrait ? 'portrait' : 'landscape'};margin:10mm}</style>
