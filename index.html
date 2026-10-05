@@ -233,6 +233,10 @@ button:focus-visible,.btn:focus-visible,.nb:focus-visible{outline:2px solid var(
   background:currentColor;
 }
 .met:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.met.click{cursor:pointer}
+.met.click:active{transform:translateY(0)}
+.met.sel{border-color:currentColor;box-shadow:0 0 0 2px currentColor}
+.page .card,#pm-sched-card{scroll-margin-top:70px}
 .met-icon{font-size:22px;margin-bottom:8px;display:block}
 .met-val{font-size:30px;font-weight:800;display:block;line-height:1;margin-bottom:4px}
 .met-lbl{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px}
@@ -1365,6 +1369,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
 let G_JOBS = [], G_MACHS = [], G_TECHS = [], G_SETTINGS = {}, G_CHARTS = {};
 let G_PM_CHECKLISTS = [], G_PM_SCHEDULES = [], G_PM_RECORDS = [];
 let G_FILTER = '', G_PAGE = 1, G_PAGE_SIZE = 15;
+let G_PM_DUE_FILTER = '';
 const MONTHS_TH = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
 
 // ============================================================
@@ -1930,13 +1935,13 @@ function renderDash() {
   };
 
   document.getElementById('d-met').innerHTML = `
-    <div class="met blue"><i class="ti ti-clipboard-list met-icon"></i><span class="met-val">${s.tot}</span><span class="met-lbl">ทั้งหมด</span></div>
-    <div class="met orange"><i class="ti ti-clock met-icon"></i><span class="met-val">${s.wait}</span><span class="met-lbl">รอดำเนินการ</span></div>
-    <div class="met blue"><i class="ti ti-tool met-icon"></i><span class="met-val">${s.prog}</span><span class="met-lbl">กำลังซ่อม</span></div>
-    <div class="met green"><i class="ti ti-circle-check met-icon"></i><span class="met-val">${s.done}</span><span class="met-lbl">เสร็จสิ้น</span></div>
-    <div class="met red"><i class="ti ti-alert-triangle met-icon"></i><span class="met-val">${s.overdue}</span><span class="met-lbl">เลยกำหนด</span></div>
-    <div class="met teal"><i class="ti ti-coin met-icon"></i><span class="met-val" style="font-size:20px">${s.cost.toLocaleString('th-TH',{maximumFractionDigits:0})} ฿</span><span class="met-lbl">ค่าใช้จ่ายรวม</span></div>
-    <div class="met purple"><i class="ti ti-checklist met-icon"></i><span class="met-val">${pmDueSchedules().length}</span><span class="met-lbl">PM ครบกำหนด</span></div>
+    <div class="met blue click" onclick="goJobs('')" title="กดดูรายการ"><i class="ti ti-clipboard-list met-icon"></i><span class="met-val">${s.tot}</span><span class="met-lbl">ทั้งหมด</span></div>
+    <div class="met orange click" onclick="goJobs('รอดำเนินการ')" title="กดดูรายการ"><i class="ti ti-clock met-icon"></i><span class="met-val">${s.wait}</span><span class="met-lbl">รอดำเนินการ</span></div>
+    <div class="met blue click" onclick="goJobs('กำลังซ่อม')" title="กดดูรายการ"><i class="ti ti-tool met-icon"></i><span class="met-val">${s.prog}</span><span class="met-lbl">กำลังซ่อม</span></div>
+    <div class="met green click" onclick="goJobs('เสร็จสิ้น')" title="กดดูรายการ"><i class="ti ti-circle-check met-icon"></i><span class="met-val">${s.done}</span><span class="met-lbl">เสร็จสิ้น</span></div>
+    <div class="met red click" onclick="goJobs('overdue')" title="กดดูรายการ"><i class="ti ti-alert-triangle met-icon"></i><span class="met-val">${s.overdue}</span><span class="met-lbl">เลยกำหนด</span></div>
+    <div class="met teal click" onclick="go('rep',document.getElementById('nav-rep'))" title="กดดูรายงานสรุป"><i class="ti ti-coin met-icon"></i><span class="met-val" style="font-size:20px">${s.cost.toLocaleString('th-TH',{maximumFractionDigits:0})} ฿</span><span class="met-lbl">ค่าใช้จ่ายรวม</span></div>
+    <div class="met purple click" onclick="go('pm',document.getElementById('nav-pm'))" title="กดดูรายการ PM"><i class="ti ti-checklist met-icon"></i><span class="met-val">${pmDueSchedules().length}</span><span class="met-lbl">PM ครบกำหนด</span></div>
   `;
 
   const hiJobs = G_JOBS.filter(j => (j["ความเร่งด่วน"] === 'สูง' && !['เสร็จสิ้น','ยกเลิก'].includes(j["สถานะ"])) || isOverdue(j))
@@ -2016,6 +2021,18 @@ function setFilter(status, el) {
   document.querySelectorAll('.ftab').forEach(x => x.classList.remove('on'));
   el.classList.add('on');
   renderJobs();
+}
+
+// From a dashboard metric card: open the jobs page showing exactly that status.
+// Search/urgency/tech filters are cleared so the list matches the card's count.
+function goJobs(status) {
+  document.getElementById('sq').value = '';
+  document.getElementById('sq-urg').value = '';
+  document.getElementById('sq-tech').value = '';
+  go('jobs', document.getElementById('nav-jobs'));
+  const tab = [...document.querySelectorAll('#filter-tabs .ftab')]
+    .find(b => (b.getAttribute('onclick')||'').includes(`'${status}'`));
+  setFilter(status, tab || document.querySelector('#filter-tabs .ftab'));
 }
 
 function getFilteredJobs() {
@@ -2324,6 +2341,17 @@ function pmRecordStatusLabel(r) {
   return { text: 'ปกติ', badge: 'bd' };
 }
 
+// PM metric cards filter the due list below them; pressing the active card again clears it.
+function setPmDueFilter(f) {
+  G_PM_DUE_FILTER = G_PM_DUE_FILTER === f ? '' : f;
+  renderPmMetrics(); renderPmDue();
+  document.getElementById('pm-due-list').closest('.card').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function showPmSchedSection() {
+  if (document.getElementById('pm-sched-section').style.display === 'none') togglePmSchedSection();
+  document.getElementById('pm-sched-card').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
 function renderPmMetrics() {
   const el = document.getElementById('pm-met');
   if (!el) return;
@@ -2332,11 +2360,13 @@ function renderPmMetrics() {
   const overdue = active.filter(s => s.next_due_date && s.next_due_date < today).length;
   const dueToday = active.filter(s => s.next_due_date === today).length;
   const issues = G_PM_RECORDS.filter(r => r.has_issue).length;
+  const sel = f => G_PM_DUE_FILTER === f ? ' sel' : '';
+  const schedClick = isPmOnlyMode() ? '' : ' click" onclick="showPmSchedSection()" title="กดดูแผนงานทั้งหมด';
   el.innerHTML = `
-    <div class="met red"><i class="ti ti-alert-triangle met-icon"></i><span class="met-val">${overdue}</span><span class="met-lbl">เลยกำหนด</span></div>
-    <div class="met orange"><i class="ti ti-clock met-icon"></i><span class="met-val">${dueToday}</span><span class="met-lbl">ครบกำหนดวันนี้</span></div>
-    <div class="met blue"><i class="ti ti-calendar-event met-icon"></i><span class="met-val">${active.length}</span><span class="met-lbl">แผนงานทั้งหมด</span></div>
-    <div class="met teal" style="cursor:pointer" onclick="openPmIssuesList()" title="กดดูรายละเอียด"><i class="ti ti-clipboard-x met-icon"></i><span class="met-val">${issues}</span><span class="met-lbl">พบปัญหา (สะสม)</span></div>
+    <div class="met red click${sel('overdue')}" onclick="setPmDueFilter('overdue')" title="กดเพื่อดูเฉพาะรายการเลยกำหนด"><i class="ti ti-alert-triangle met-icon"></i><span class="met-val">${overdue}</span><span class="met-lbl">เลยกำหนด</span></div>
+    <div class="met orange click${sel('today')}" onclick="setPmDueFilter('today')" title="กดเพื่อดูเฉพาะรายการครบกำหนดวันนี้"><i class="ti ti-clock met-icon"></i><span class="met-val">${dueToday}</span><span class="met-lbl">ครบกำหนดวันนี้</span></div>
+    <div class="met blue${schedClick}"><i class="ti ti-calendar-event met-icon"></i><span class="met-val">${active.length}</span><span class="met-lbl">แผนงานทั้งหมด</span></div>
+    <div class="met teal click" onclick="openPmIssuesList()" title="กดดูรายละเอียด"><i class="ti ti-clipboard-x met-icon"></i><span class="met-val">${issues}</span><span class="met-lbl">พบปัญหา (สะสม)</span></div>
   `;
 }
 
@@ -2344,12 +2374,19 @@ function renderPmDue() {
   const el = document.getElementById('pm-due-list');
   if (!el) return;
   const today = todayStr();
-  const due = pmDueSchedules().sort((a,b) => a.next_due_date.localeCompare(b.next_due_date));
+  const due = pmDueSchedules()
+    .filter(s => G_PM_DUE_FILTER === 'overdue' ? s.next_due_date < today : G_PM_DUE_FILTER === 'today' ? s.next_due_date === today : true)
+    .sort((a,b) => a.next_due_date.localeCompare(b.next_due_date));
+  const filterBar = G_PM_DUE_FILTER ? `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <span class="badge ${G_PM_DUE_FILTER === 'overdue' ? 'bh' : 'bw'}">แสดงเฉพาะ: ${G_PM_DUE_FILTER === 'overdue' ? 'เลยกำหนด' : 'ครบกำหนดวันนี้'}</span>
+      <button class="btn btn-sm" onclick="setPmDueFilter('')"><i class="ti ti-x"></i> แสดงทั้งหมด</button>
+    </div>` : '';
   if (!due.length) {
-    el.innerHTML = '<div class="empty-state"><i class="ti ti-mood-happy"></i><p>ไม่มีรายการที่ต้องตรวจตอนนี้</p></div>';
+    el.innerHTML = filterBar + '<div class="empty-state"><i class="ti ti-mood-happy"></i><p>ไม่มีรายการที่ต้องตรวจตอนนี้</p></div>';
     return;
   }
-  el.innerHTML = due.map(s => {
+  el.innerHTML = filterBar + due.map(s => {
     const cl = G_PM_CHECKLISTS.find(c => c.id === s.checklist_id);
     const od = s.next_due_date < today;
     return `
