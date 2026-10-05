@@ -614,7 +614,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
 .pt-actions{max-width:800px;margin:20px auto 0;text-align:center;display:flex;justify-content:center;gap:12px}
 
 /* PM result form — mirrors the paper "Preventive Maintenance Checklist" sheet so printouts can be filed alongside it */
-.pmf-wrap{max-width:800px;margin:0 auto;background:#fff;padding:26px 28px;border-radius:16px;box-shadow:0 8px 32px rgba(15,23,42,.12);color:#000;font-size:13px}
+.pmf-wrap{max-width:1040px;margin:0 auto;background:#fff;padding:26px 28px;border-radius:16px;box-shadow:0 8px 32px rgba(15,23,42,.12);color:#000;font-size:13px}
 .pmf-top{display:flex;justify-content:space-between;align-items:stretch;gap:12px}
 .pmf-brand{display:flex;align-items:center;gap:12px}
 .pmf-logo{height:48px;width:auto}
@@ -643,7 +643,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
   @page{size:A4 portrait;margin:10mm}
   body.print-mode-ticket #print-ticket{background:#fff;padding:0}
   .pt-actions{display:none}
-  .pmf-wrap{max-width:190mm;width:190mm;margin:0;padding:0;border-radius:0;box-shadow:none}
+  .pmf-wrap{max-width:277mm;width:277mm;margin:0;padding:0;border-radius:0;box-shadow:none}
   .pmf-table th{background:#fff}
   .pmf-table tr{break-inside:avoid}
   .pmf-sign{break-inside:avoid}
@@ -2776,6 +2776,8 @@ function openPmRecordDetail(id) {
 }
 
 // ---------- PRINT PM RESULT (filing copy, same layout as the paper PM checklist) ----------
+// Landscape like the paper sheet: the inline @page rule overrides the shared portrait one
+// and disappears with the markup when closePrintTicket() clears #print-ticket.
 function printPmRecord(id) {
   const r = G_PM_RECORDS.find(x => x.id === id);
   if (!r) { toast('⚠️ ไม่พบข้อมูลผลตรวจ'); return; }
@@ -2796,6 +2798,7 @@ function printPmRecord(id) {
     </tr>`).join('') || '<tr><td colspan="6" class="c">ไม่มีรายการตรวจ</td></tr>';
 
   const html = `
+<style>@page{size:A4 landscape;margin:10mm}</style>
 <div class="pmf-wrap">
   <div class="pmf-top">
     <div class="pmf-brand">
