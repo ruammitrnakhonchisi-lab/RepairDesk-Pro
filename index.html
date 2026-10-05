@@ -565,6 +565,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
 .pt-head-left{display:flex;align-items:center;gap:14px;min-width:0}
 .pt-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#1D6EDB,#1353A8);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(29,110,219,.3)}
 .pt-icon svg{width:22px;height:22px;stroke:#fff}
+.pt-logo{height:44px;width:auto;flex-shrink:0}
 .pt-title{font-size:17px;font-weight:700;color:#0F172A;line-height:1.25}
 .pt-sub{font-size:11px;color:#334155;margin-top:2px}
 .pt-repbox{text-align:right;flex-shrink:0;border:1.5px solid #1D6EDB;border-radius:10px;padding:7px 16px;background:#EBF2FD;min-width:150px}
@@ -615,6 +616,8 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
 /* PM result form — mirrors the paper "Preventive Maintenance Checklist" sheet so printouts can be filed alongside it */
 .pmf-wrap{max-width:800px;margin:0 auto;background:#fff;padding:26px 28px;border-radius:16px;box-shadow:0 8px 32px rgba(15,23,42,.12);color:#000;font-size:13px}
 .pmf-top{display:flex;justify-content:space-between;align-items:stretch;gap:12px}
+.pmf-brand{display:flex;align-items:center;gap:12px}
+.pmf-logo{height:48px;width:auto}
 .pmf-co{font-size:15px;font-weight:700}
 .pmf-title{font-size:19px;font-weight:700;margin-top:2px}
 .pmf-month{border:1.3px solid #000;padding:6px 16px;font-size:15px;font-weight:700;display:flex;align-items:center;white-space:nowrap}
@@ -654,6 +657,7 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
   .pt-head{padding:4.5mm 6mm 3.5mm;gap:3.5mm}
   .pt-icon{width:9.5mm;height:9.5mm;border-radius:2.2mm;box-shadow:none}
   .pt-icon svg{width:5.2mm;height:5.2mm}
+  .pt-logo{height:9.5mm}
   .pt-title{font-size:15px;line-height:1.2}
   .pt-sub{font-size:9.5px;line-height:1.25;margin-top:0.5mm;color:#334155}
   .pt-repbox{padding:2.5mm 5mm;min-width:auto;border-radius:2mm}
@@ -1390,6 +1394,8 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
 //  GLOBALS
 // ============================================================
 let G_JOBS = [], G_MACHS = [], G_TECHS = [], G_SETTINGS = {}, G_CHARTS = {};
+// Absolute so it also resolves inside the about:blank report popups
+const LOGO_URL = new URL('logo-rmc.jpg', location.href).href;
 let G_PM_CHECKLISTS = [], G_PM_SCHEDULES = [], G_PM_RECORDS = [];
 let G_FILTER = '', G_PAGE = 1, G_PAGE_SIZE = 15;
 let G_PM_DUE_FILTER = '';
@@ -2792,9 +2798,12 @@ function printPmRecord(id) {
   const html = `
 <div class="pmf-wrap">
   <div class="pmf-top">
-    <div>
+    <div class="pmf-brand">
+      <img class="pmf-logo" src="${LOGO_URL}" alt="">
+      <div>
       <div class="pmf-co">${escHtml(coName)}</div>
       <div class="pmf-title">Preventive Maintenance Checklist</div>
+      </div>
     </div>
     <div class="pmf-month">${escHtml(monthLbl)}</div>
   </div>
@@ -2940,9 +2949,7 @@ function printPmSched(id) {
 <div class="pt-wrap">
   <div class="pt-head">
     <div class="pt-head-left">
-      <div class="pt-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      </div>
+      <img class="pt-logo" src="${LOGO_URL}" alt="">
       <div>
         <div class="pt-title">ใบตรวจ PM (Preventive Maintenance)</div>
         <div class="pt-sub">${escHtml(coName)} · ${escHtml(coDep)}</div>
@@ -3126,6 +3133,8 @@ function printPmReport() {
 *{box-sizing:border-box}
 body{font-family:'Prompt',sans-serif;font-size:11px;color:#1E293B;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1D6EDB;padding-bottom:10px;margin-bottom:18px}
+.hdr-brand{display:flex;align-items:center;gap:12px}
+.hdr-logo{height:46px;width:auto}
 .hdr-title{font-size:19px;font-weight:700;color:#1D6EDB;line-height:1.1}
 .hdr-sub{font-size:11px;color:#64748B;margin-top:3px}
 .hdr-right{text-align:right;font-size:11px;color:#64748B}
@@ -3145,10 +3154,10 @@ tr:nth-child(even) td{background:#F8FAFC}
 @media print{.no-print{display:none}}
 </style></head><body>
 <div class="hdr">
-  <div>
+  <div class="hdr-brand"><img class="hdr-logo" src="${LOGO_URL}" alt=""><div>
     <div class="hdr-title">${escHtml(coName)}</div>
     <div class="hdr-sub">รายงานการตรวจ PM (Preventive Maintenance) — ${escHtml(range.label)}${coDep?' · '+escHtml(coDep):''}</div>
-  </div>
+  </div></div>
   <div class="hdr-right">
     <div style="font-size:12px;font-weight:700">พิมพ์เมื่อ</div>
     <div>${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})} ${new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})} น.</div>
@@ -3538,9 +3547,7 @@ function printJob(id = null) {
   <!-- HEADER -->
   <div class="pt-head">
     <div class="pt-head-left">
-      <div class="pt-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-      </div>
+      <img class="pt-logo" src="${LOGO_URL}" alt="">
       <div>
         <div class="pt-title">ใบแจ้งซ่อม (Repair Ticket)</div>
         <div class="pt-sub">${escHtml(coName)} · ${escHtml(coDep)}</div>
@@ -3690,6 +3697,8 @@ function printReport() {
 *{box-sizing:border-box}
 body{font-family:'Prompt',sans-serif;font-size:11px;color:#1E293B;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1D6EDB;padding-bottom:10px;margin-bottom:18px}
+.hdr-brand{display:flex;align-items:center;gap:12px}
+.hdr-logo{height:46px;width:auto}
 .hdr-title{font-size:19px;font-weight:700;color:#1D6EDB;line-height:1.1}
 .hdr-sub{font-size:11px;color:#64748B;margin-top:3px}
 .hdr-right{text-align:right;font-size:11px;color:#64748B}
@@ -3711,11 +3720,11 @@ tr:hover td{background:#EBF2FD}
 @media print{.no-print{display:none}}
 </style></head><body>
 <div class="hdr">
-  <div>
+  <div class="hdr-brand"><img class="hdr-logo" src="${LOGO_URL}" alt=""><div>
     <div class="hdr-title">${escHtml(coName)}</div>
     <div class="hdr-sub">รายงานสรุปงานซ่อมบำรุงประจำเดือน ${escHtml(monthName)} ${yearTh}${coDep?' · '+escHtml(coDep):''}</div>
     <div class="hdr-sub">เครื่องจักร: <b>${escHtml(mach||'ทั้งหมด')}</b> | ช่าง: <b>${escHtml(techF||'ทั้งหมด')}</b></div>
-  </div>
+  </div></div>
   <div class="hdr-right">
     <div style="font-size:12px;font-weight:700">พิมพ์เมื่อ</div>
     <div>${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})} ${new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})} น.</div>
