@@ -1403,6 +1403,12 @@ body.print-mode-ticket #print-ticket{display:block;background:#EEF2F7;padding:26
 // ============================================================
 let G_JOBS = [], G_MACHS = [], G_TECHS = [], G_SETTINGS = {}, G_CHARTS = {};
 // Absolute so it also resolves inside the about:blank report popups
+// Name printed on report/form headers (the job ticket keeps the raw setting). The settings row was seeded with the app name
+// 'RepairDesk Pro', so that value counts as "not set" and falls back to the real company name.
+function reportCoName() {
+  const v = (G_SETTINGS["ชื่อบริษัท"] || '').trim();
+  return v && v !== 'RepairDesk Pro' ? v : 'บริษัท ร่วมมิตรคอนกรีต จำกัด (นครชัยศรี)';
+}
 const LOGO_URL = new URL('logo-rmc.jpg', location.href).href;
 let G_PM_CHECKLISTS = [], G_PM_SCHEDULES = [], G_PM_RECORDS = [];
 let G_FILTER = '', G_PAGE = 1, G_PAGE_SIZE = 15;
@@ -2789,7 +2795,7 @@ function openPmRecordDetail(id) {
 function printPmRecord(id) {
   const r = G_PM_RECORDS.find(x => x.id === id);
   if (!r) { toast('⚠️ ไม่พบข้อมูลผลตรวจ'); return; }
-  const coName = G_SETTINGS["ชื่อบริษัท"] || 'RepairDesk Pro';
+  const coName = reportCoName();
   const monthLbl = r.checked_at
     ? new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', month: 'long', year: 'numeric' }).format(new Date(r.checked_at))
     : '';
@@ -2955,7 +2961,7 @@ function printPmSched(id) {
   const cl = G_PM_CHECKLISTS.find(c => c.id === s.checklist_id);
   if (!cl) { toast('⚠️ ไม่พบเช็คลิสต์ของแผนงานนี้'); return; }
 
-  const coName = G_SETTINGS["ชื่อบริษัท"] || 'RepairDesk Pro';
+  const coName = reportCoName();
   const coDep  = G_SETTINGS["แผนก"] || 'ระบบแจ้งซ่อมและบำรุงรักษา';
 
   const rows = (cl.items || []).map((item, i) => `
@@ -3128,7 +3134,7 @@ function printPmReport() {
   if (!range) { toast('⚠️ กรุณาเลือกช่วงเวลาที่ต้องการก่อน'); return; }
   const records = pmReportRecords(range);
   const s = pmReportStats(records);
-  const coName = G_SETTINGS["ชื่อบริษัท"] || 'RepairDesk Pro';
+  const coName = reportCoName();
   const coDep  = G_SETTINGS["แผนก"] || '';
 
   const rows = records.map(r => {
@@ -3680,7 +3686,7 @@ function printReport() {
   const monthName = MONTHS_TH[m-1];
   const yearTh = y + 543;
 
-  const coName = G_SETTINGS["ชื่อบริษัท"] || 'RepairDesk Pro';
+  const coName = reportCoName();
   const coDep  = G_SETTINGS["แผนก"] || '';
 
   const filtered = G_JOBS.filter(j => {
