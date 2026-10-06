@@ -2793,8 +2793,9 @@ function printPmRecord(id) {
   const monthLbl = r.checked_at
     ? new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', month: 'long', year: 'numeric' }).format(new Date(r.checked_at))
     : '';
-  // Crane PM is filed on the portrait crane sheet; every other PM form is landscape
-  const portrait = ((r.checklist_name || '') + (r.machine_name || '')).includes('เครน');
+  // Crane and concrete-plant PM are filed on portrait sheets; every other PM form is landscape
+  const portrait = ((r.checklist_name || '') + (r.machine_name || '')).includes('เครน')
+    || (r.checklist_name || '').includes('แพล้น/เครื่องผสมคอนกรีต');
   const tick = on => `<td class="tick">${on ? '✓' : ''}</td>`;
   const items = r.results || [];
   // Items named "[หมวด] รายการ" become one section row per group, as on the paper sheet
